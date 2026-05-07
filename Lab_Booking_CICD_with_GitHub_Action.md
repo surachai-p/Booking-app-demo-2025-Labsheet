@@ -251,11 +251,11 @@ RUN chmod +x ./docker-entrypoint.sh
 
 - [✅] ติดตั้ง Git for Windows สำเร็จ
 - [✅] `git config --global core.autocrlf` แสดงค่า `false`
-- [ ] VS Code ตั้งค่า `files.eol: "\n"` แล้ว
-- [ ] VS Code ใช้ Git Bash เป็น default terminal
-- [ ] มุมขวาล่าง VS Code แสดง `LF` (ไม่ใช่ `CRLF`)
-- [ ] สร้างและ commit `.gitattributes` แล้ว (ทำหลัง Clone ในส่วนที่ 1.2)
-- [ ] เพิ่ม `sed -i 's/\r$//'` ใน `Dockerfile` แล้ว
+- [✅] VS Code ตั้งค่า `files.eol: "\n"` แล้ว
+- [✅] VS Code ใช้ Git Bash เป็น default terminal
+- [✅] มุมขวาล่าง VS Code แสดง `LF` (ไม่ใช่ `CRLF`)
+- [✅] สร้างและ commit `.gitattributes` แล้ว (ทำหลัง Clone ในส่วนที่ 1.2)
+- [✅] เพิ่ม `sed -i 's/\r$//'` ใน `Dockerfile` แล้ว
 
 ---
 
