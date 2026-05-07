@@ -662,6 +662,48 @@ curl http://localhost:3001/api/reports \
 
 ```plaintext
 # วาง output จาก curl ที่นี่
+1. ดูรายการห้องทั้งหมด
+USER@LAPTOP-UTVPS9CM MINGW64 ~/booking-app-demo-2025 (main)
+$ curl http://localhost:5000/api/rooms
+[{"id":1,"name":"Standard Room","type":"standard","capacity":2,"price":1200},{"id":2,"name":"Deluxe Room","type":"deluxe","capacity":4,"price":2500},{"id":3,"name":"Suite Room","type":"suite","capacity":6,"price":5000}]
+
+2.สร้างการจองใหม่
+USER@LAPTOP-UTVPS9CM MINGW64 ~/booking-app-demo-2025 (main)
+$ curl -X POST http://localhost:5000/api/bookings \
+  -H "Content-Type: application/json" \
+  -d '{
+    "fullname":"สมชาย ใจดี",
+    "email":"somchai@example.com",
+    "phone":"0812345678",
+    "checkin":"2026-08-01",
+    "checkout":"2026-08-03",
+    "roomtype":"standard",
+    "guests":2
+  }'
+{"id":11,"fullname":"����� 㨴�","email":"somchai@example.com","phone":"0812345678","checkin":"2026-08-01","checkout":"2026-08-03","roomtype":"standard","guests":2,"status":"pending","comment":null,"created_at":"2026-05-07 04:39:07"}
+
+3.Login เพื่อรับ JWT Token
+USER@LAPTOP-UTVPS9CM MINGW64 ~/booking-app-demo-2025 (main)
+$ curl -X POST http://localhost:5000/api/login   -H "Content-Type: application/json"   -d '{
+"username": "admin", "password": "admin123"}'
+{"token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJhZG1pbiIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc3ODEyODc3NywiZXhwIjoxNzc4MTMyMzc3fQ.YL8ZOTmi1pUC9_qS3ECJl5_d9cvfdHrfKBIdXf4gPvU","user":{"id":1,"username":"admin","role":"admin"}}
+
+4.นำ token ที่ได้มาใช้ (แทนที่ YOUR_JWT_TOKEN)
+USER@LAPTOP-UTVPS9CM MINGW64 ~/booking-app-demo-2025 (main)
+$ export TOKEN="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJhZG1pbiIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc3ODEyODc3NywiZXhwIjoxNzc4MTMyMzc3fQ.YL8ZOTmi1pUC9_qS3ECJl5_d9cvfdHrfKBIdXf4gPvU"
+
+5.ดูรายการจองทั้งหมด (ต้องมี token)
+USER@LAPTOP-UTVPS9CM MINGW64 ~/booking-app-demo-2025 (main)
+$ curl http://localhost:5000/api/bookings \
+  -H "Authorization: Bearer $TOKEN"
+[{"id":11,"fullname":"����� 㨴�","email":"somchai@example.com","phone":"0812345678","checkin":"2026-08-01","checkout":"2026-08-03","roomtype":"standard","guests":2,"status":"pending","comment":null,"created_at":"2026-05-07 04:39:07"},{"id":10,"fullname":"สมชาย ใจดี","email":""somchai@example.com","phone":"0812345678","checkin":"2026-12-01","checkout":"2026-12-03","roomtype":"standard","guests":2,"status":"pending","comment":null,"created_at":"2026-03-11 17:40:05"},{"id":9,"fullname":"สมชาย ใจดี","email":"somchai@example.com","phone":"0812345678",""checkin":"2026-12-01","checkout":"2026-12-03","roomtype":"standard","guests":2,"status":"pending","comment":null,"created_at":"2026-03-11 17:23:57"},{"id":8,"fullname":"สมชาย ใจดี","emmail":"somchai@example.com","phone":"0812345678","checkin":"2026-12-01","checkout":"2026-12-03","roomtype":"standard","guests":2,"status":"pending","comment":null,"created_at":"2026-03-11 17:22:19"},{"id":1,"fullname":"ทดสอบ","email":"test@gmail.com","phone":"0123456789","checkin":"2026-03-05","checkout":"2026-03-06","roomtype":"deluxe","guests":3,"status":"pending","comment":"ทดสอบการจอง","created_at":"2026-03-05 04:02:26"}]
+
+6.ดูรายงาน
+USER@LAPTOP-UTVPS9CM MINGW64 ~/booking-app-demo-2025 (main)
+$ curl http://localhost:5000/api/reports   -H "Authorization: Bearer $TOKEN"
+{"reportGeneratedAt":"2026-05-07T05:03:12.809Z","data":[{"roomtype":"deluxe","total_bookings":1,"total_guests":3},{"roomtype":"standard","total_bookings":4,"total_guests":8}]}
+
+
 
 
 
@@ -973,6 +1015,8 @@ start newman-report.html       # Windows (Git Bash)
 
 ```plaintext
 # แนบ screenshot ผลการทดสอบที่นี่
+![alt text](image.png)
+![alt text](image-1.png)
 
 ```
 
@@ -980,6 +1024,55 @@ start newman-report.html       # Windows (Git Bash)
 
 ```plaintext
 # ตอบคำถามที่นี่
+ในการทดสอบ API ด้วย Newman มีทั้งการทดสอบแบบ Positive Case และ Negative Case เพื่อให้มั่นใจว่าระบบสามารถทำงานได้ถูกต้องทั้งในกรณีที่ใช้งานปกติและกรณีที่เกิดข้อผิดพลาด
+
+1. Positive Case — Login Success
+
+เป็นการทดสอบการเข้าสู่ระบบด้วย username และ password ที่ถูกต้อง โดยส่งคำขอไปที่ API /api/login
+
+{
+  "username": "admin",
+  "password": "admin123"
+}
+
+ผลลัพธ์ที่คาดหวังคือระบบต้องตอบกลับด้วย Status Code 200 OK และส่ง JWT Token กลับมา เพื่อใช้ยืนยันตัวตนในการเข้าถึง API อื่น ๆ ที่ต้องมีสิทธิ์
+
+ตัวอย่าง assertion:
+
+pm.response.to.have.status(200);
+
+การทดสอบนี้ช่วยยืนยันว่าระบบ Authentication สามารถทำงานได้ถูกต้องเมื่อผู้ใช้กรอกข้อมูลถูกต้อง
+
+2. Negative Case — Login Wrong Password
+
+เป็นการทดสอบเข้าสู่ระบบด้วยรหัสผ่านที่ไม่ถูกต้อง
+
+{
+  "username": "admin",
+  "password": "wrongpassword"
+}
+
+ผลลัพธ์ที่คาดหวังคือระบบต้องตอบกลับด้วย Status Code 401 Unauthorized และไม่อนุญาตให้เข้าสู่ระบบ
+
+ตัวอย่าง assertion:
+
+pm.response.to.have.status(401);
+
+การทดสอบนี้ช่วยตรวจสอบว่าระบบสามารถป้องกันการเข้าสู่ระบบด้วยข้อมูลที่ไม่ถูกต้องได้อย่างปลอดภัย
+
+3. Positive Case — Get Reports
+
+เป็นการทดสอบเรียกดูรายงานผ่าน API /api/reports โดยใช้ JWT Token ที่ถูกต้อง
+
+ผลลัพธ์ที่คาดหวังคือระบบต้องตอบกลับด้วย Status Code 200 OK และส่งข้อมูลรายงานกลับมาในรูปแบบ JSON
+
+การทดสอบนี้ช่วยยืนยันว่า API ที่ต้องใช้ Authentication สามารถทำงานได้ถูกต้องเมื่อมี token ที่ถูกต้อง
+
+4. Negative Case — Unauthorized Access
+
+เป็นการทดสอบเรียก API ที่ต้องใช้สิทธิ์โดยไม่ส่ง JWT Token เช่น /api/reports/export
+
+ผลลัพธ์ที่คาดหวังคือระบบต้องตอบกลับด้วย Status Code 401 Unauthorized เพื่อป้องกันผู้ที่ไม่ได้เข้าสู่ระบบเข้าถึงข้อมูลสำคัญ
 
 ```
 
