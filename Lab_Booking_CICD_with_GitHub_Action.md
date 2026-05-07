@@ -440,7 +440,7 @@ model Booking {
 **คำถาม 2.1**: จาก schema นี้ ความสัมพันธ์ระหว่าง `Room` และ `Booking` เป็นแบบใด (one-to-one / one-to-many / many-to-many)? อธิบายเหตุผล
 
 ```plaintext
-# ตอบคำถามที่นี่
+# เป็นแบบ One-to-Many เพราะในโมเดล Room มีการระบุ bookings Booking[] (ซึ่งหมายความว่า 1 ห้องสามารถมีรายการจองได้หลายรายการ) ในขณะที่ในโมเดล Booking จะระบุ roomId เพียงค่าเดียวต่อ 1 การจอง
 
 ```
 
@@ -642,7 +642,7 @@ curl http://localhost:3001/api/reports \
 **บันทึกผลการทดสอบ**:
 
 ```plaintext
-# วาง output จาก curl ที่นี่
+# วาง output จาก curl ที่นี่ ![alt text](image.png)
 
 
 
@@ -953,7 +953,7 @@ start newman-report.html       # Windows (Git Bash)
 **แนบรูปผลการทดสอบ Newman**:
 
 ```plaintext
-# แนบ screenshot ผลการทดสอบที่นี่
+# แนบ screenshot ผลการทดสอบที่นี่  ![alt text](<ภาพถ่ายหน้าจอ 2569-05-07 เวลา 16.01.10.png>)
 
 ```
 
