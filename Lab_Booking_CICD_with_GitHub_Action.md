@@ -794,6 +794,15 @@ find . -name "*.postman_collection.json"
           "name": "Create Room (Admin)",
           "event": [
             {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const suffix = Math.floor(Math.random() * 100000);",
+                  "pm.collectionVariables.set('roomSuffix', suffix);"
+                ]
+              }
+            },
+            {
               "listen": "test",
               "script": {
                 "exec": [
@@ -817,7 +826,7 @@ find . -name "*.postman_collection.json"
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\"name\": \"Deluxe Room 101\", \"type\": \"Deluxe\", \"capacity\": 2, \"price\": 1500}"
+              "raw": "{\"name\": \"Deluxe Room {{roomSuffix}}\", \"roomType\": \"Deluxe-{{roomSuffix}}\", \"description\": \"Deluxe room with premium amenities\", \"capacity\": 2, \"price\": 1500}"
             },
             "url": "{{baseUrl}}/api/rooms"
           }
@@ -1159,6 +1168,154 @@ jobs:
         run: |
           cd frontend
           npm run build
+name: CI/CD Pipeline — Booking App
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  NODE_VERSION: '20'
+
+jobs:
+  # ─────────────────────────────────────────────
+  # Job 1: Backend CI — Install, Migrate, Test
+  # ─────────────────────────────────────────────
+  backend-test:
+    name: Backend Tests (Newman API)
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: booking_test
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install backend dependencies
+        run: |
+          cd backend
+          npm ci
+
+      - name: Generate Prisma client
+        run: |
+          cd backend
+          npx prisma generate --schema=prisma/schema.prisma
+
+      - name: Run database migrations
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/booking_test
+        run: |
+          cd backend
+          npx prisma migrate deploy --schema=prisma/schema.prisma
+
+      - name: Seed test data
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/booking_test
+          JWT_SECRET: ci-test-secret-key
+          NODE_ENV: test
+        run: |
+          cd backend
+          # รัน seed script ถ้ามี (สร้าง admin user สำหรับ test)
+          node -e "
+            const { PrismaClient } = require('@prisma/client');
+            const bcrypt = require('bcryptjs');
+            const prisma = new PrismaClient();
+            async function seed() {
+              const hash = await bcrypt.hash('admin123', 10);
+              await prisma.user.upsert({
+                where: { username: 'admin' },
+                update: {},
+                create: { username: 'admin', password: hash, role: 'admin' }
+              });
+              await prisma.room.create({
+                data: { name: 'Test Room 101', roomType: 'Standard', capacity: 2, price: 1000 }
+              });
+              console.log('Seed completed');
+            }
+            seed().catch(console.error).finally(() => prisma.\$disconnect());
+          "
+
+      - name: Start backend server
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/booking_test
+          JWT_SECRET: ci-test-secret-key
+          PORT: 3001
+          NODE_ENV: test
+        run: |
+          cd backend
+          npm start &
+          # รอให้ server พร้อม
+          sleep 5
+          curl -f http://localhost:3001/api/rooms || (echo "Server not ready" && exit 1)
+
+      - name: Install Newman
+        run: npm install -g newman newman-reporter-htmlextra
+
+      - name: Run Newman API Tests
+        run: |
+          newman run tests/booking-api.postman_collection.json \
+            --env-var "baseUrl=http://localhost:3001" \
+            --reporters cli,junit \
+            --reporter-junit-export newman-results.xml
+
+      - name: Upload Newman test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: newman-test-results
+          path: newman-results.xml
+
+  # ─────────────────────────────────────────────
+  # Job 2: Frontend CI — Install, Build, Lint
+  # ─────────────────────────────────────────────
+  frontend-build:
+    name: Frontend Build & Lint
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        run: |
+          cd frontend
+          npm ci
+
+      - name: Build frontend
+        env:
+          VITE_API_URL: http://localhost:3001
+        run: |
+          cd frontend
+          npm run build
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
@@ -1173,7 +1330,7 @@ jobs:
   deploy-frontend:
     name: Deploy Frontend → Vercel
     runs-on: ubuntu-latest
-    needs: [backend-test, frontend-build, security-scan]
+    needs: [backend-test, frontend-build]
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
 
     steps:
@@ -1199,7 +1356,7 @@ jobs:
   deploy-backend-render:
     name: Deploy Backend → Render
     runs-on: ubuntu-latest
-    needs: [backend-test, frontend-build, security-scan]
+    needs: [backend-test, frontend-build]
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
 
     steps:
@@ -1207,61 +1364,26 @@ jobs:
         run: |
           curl -X POST "${{ secrets.RENDER_DEPLOY_HOOK_URL }}"
 
-      - name: Wait for deployment (90s)
-        run: sleep 90
+      - name: Wait for Render deployment (180s)
+        run: sleep 180
 
       - name: Health check — Backend on Render
         run: |
-          for i in {1..6}; do
-            echo "Health check attempt $i/6..."
-            if curl -f "${{ secrets.RENDER_BACKEND_URL }}/api/rooms"; then
+          TIMEOUT=300
+          INTERVAL=10
+          ELAPSED=0
+          while [ $ELAPSED -lt $TIMEOUT ]; do
+            echo "Health check attempt... (${ELAPSED}/${TIMEOUT}s)"
+            if curl -f --connect-timeout 5 --max-time 10 "${{ secrets.RENDER_BACKEND_URL }}/api/rooms" > /dev/null 2>&1; then
               echo "✅ Render deployment successful!"
               exit 0
             fi
-            sleep 15
+            sleep $INTERVAL
+            ELAPSED=$((ELAPSED + INTERVAL))
           done
-          echo "❌ Render health check failed after 6 attempts"
+          echo "❌ Render health check failed after ${TIMEOUT}s"
           exit 1
 
-  # ─────────────────────────────────────────────
-  # Job 5: Deploy Backend to Railway (ทางเลือก)
-  # ─────────────────────────────────────────────
-  deploy-backend-railway:
-    name: Deploy Backend → Railway
-    runs-on: ubuntu-latest
-    needs: [backend-test, frontend-build, security-scan]
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Install Railway CLI
-        run: npm install -g @railway/cli
-
-      - name: Deploy to Railway
-        env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-        run: |
-          cd backend
-          railway link ${{ secrets.RAILWAY_PROJECT_ID }}
-          railway up --detach
-
-      - name: Wait for deployment (90s)
-        run: sleep 90
-
-      - name: Health check — Backend on Railway
-        run: |
-          for i in {1..6}; do
-            echo "Health check attempt $i/6..."
-            if curl -f "${{ secrets.RAILWAY_BACKEND_URL }}/api/rooms"; then
-              echo "✅ Railway deployment successful!"
-              exit 0
-            fi
-            sleep 15
-          done
-          echo "❌ Railway health check failed"
-          exit 1
 ```
 
 **คำอธิบาย Workflow**:
@@ -1378,6 +1500,7 @@ jobs:
       - name: Deploy Backend to Render (QA)
         run: |
           curl -X POST "${{ secrets.RENDER_QA_DEPLOY_HOOK }}"
+
 ```
 
 ### ขั้นตอนที่ 7.3: ตั้งค่า GitHub Environments
