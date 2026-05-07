@@ -1013,12 +1013,12 @@ start newman-report.html       # Windows (Git Bash)
 
 **แนบรูปผลการทดสอบ Newman**:
 
-```plaintext
+
 # แนบ screenshot ผลการทดสอบที่นี่
 ![alt text](image.png)
 ![alt text](image-1.png)
 
-```
+
 
 **คำถาม 4.3**: Newman tests ที่เขียนมีการทดสอบทั้ง positive cases (สำเร็จ) และ negative cases (ล้มเหลว) อธิบายให้ครบอย่างน้อย 2 ตัวอย่าง
 
