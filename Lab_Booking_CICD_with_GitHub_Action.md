@@ -1655,8 +1655,10 @@ git push origin main
 
 **แนบรูป GitHub Actions Workflow ที่ผ่านทั้งหมด**:
 
-```plaintext
+`plaintext
 # แนบ screenshot ที่นี่
+
+![alt text](image.png)
 
 ```
 
@@ -1902,6 +1904,45 @@ curl -I $BACKEND/api/rooms
 
 ```plaintext
 # วาง output ที่นี่
+ADMIN@DESKTOP-0PF233K MINGW64 ~/Documents/1/Booking-app-demo-2025-Labsheet/booking-app-demo-2025 (main)
+$ export BACKEND=https://booking-backend-c779.onrender.com
+
+ADMIN@DESKTOP-0PF233K MINGW64 ~/Documents/1/Booking-app-demo-2025-Labsheet/booking-app-demo-2025 (main)
+$ curl $BACKEND/api/rooms
+[{"id":2,"roomType":"deluxe","name":"ห้องดีลักซ์","description":"พื้นที่กว้างขึ้น เหมาะสำหรับ 2-3 ท่าน","capacity":3,"price":1800,"createdAt":"2026-05-07T15:43:17.477Z"},{"id":19,"roomType":"Deluxe-76015","name":"Deluxe Room 76015","description":"Deluxe room with premium amenities","capacity":2,"price":1500,"createdAt":"2026-05-08T03:49:37.935Z"},{"id":26,"roomType":"Deluxe-78134","name":"Deluxe Room 78134","description":"Deluxe room with premium amenities","capacity":2,"price":1500,"createdAt":"2026-05-08T03:53:59.219Z"},{"id":1,"roomType":"standard","name":"ห้องมาตรฐาน","description":"ห้องพักสำหรับ 1-2 ท่าน พร้อมสิ่งอำนวยความสะดวกพื้นฐาน","capacity":2,"price":1200,"createdAt":"2026-05-07T15:43:17.461Z"},{"id":3,"roomType":"suite","name":"ห้องสวีท","description":"ห้องพักขนาดใหญ่สำหรับครอบครัวหรือกลุ่ม","capacity":4,"price":2500,"createdAt":"2026-05-07T15:43:17.485Z"}]
+ADMIN@DESKTOP-0PF233K MINGW64 ~/Documents/1/Booking-app-demo-2025-Labsheet/booking-app-demo-2025 (main)
+$ curl -s -X POST $BACKEND/api/login \
+  -H "Content-Type: application/json" \
+  -d '{"username":"admin","password":"admin123"}'
+{"token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJhZG1pbiIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc3ODIxMzU2NywiZXhwIjoxNzc4MjE3MTY3fQ.3AdSuh1F4dYqEJS9NVwVS8rihKdcA_e2EttwP2ndmnU","user":{"id":1,"username":"admin","role":"admin"}}
+ADMIN@DESKTOP-0PF233K MINGW64 ~/Documents/1/Booking-app-demo-2025-Labsheet/booking-app-demo-2025 (main)
+$ export TOKEN="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJhZG1pbiIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc3ODIxMzU2NywiZXhwIjoxNzc4MjE3MTY3fQ.3AdSuh1F4dYqEJS9NVwVS8rihKdcA_e2EttwP2ndmnU" 
+
+ADMIN@DESKTOP-0PF233K MINGW64 ~/Documents/1/Booking-app-demo-2025-Labsheet/booking-app-demo-2025 (main)
+$ curl $BACKEND/api/bookings \
+  -H "Authorization: Bearer $TOKEN"
+[{"id":1,"fullname":"na","email":"68@kmitl.ac.th","phone":"0623432431","checkin":"2026-05-08T00:00:00.000Z","checkout":"2026-05-10T00:00:00.000Z","roomtype":"suite","guests":1,"status":"pending","comment":null,"roomId":3,"createdAt":"2026-05-08T04:10:40.972Z","room":{"id":3,"roomType":"suite","name":"ห้องสวีท","description":"ห้องพักขนาดใหญ่สำหรับครอบครัวหรือกลุ่ม","capacity":4,"price":2500,"createdAt":"2026-05-07T15:43:17.485Z"}}]
+ADMIN@DESKTOP-0PF233K MINGW64 ~/Documents/1/Booking-app-demo-2025-Labsheet/booking-app-demo-2025 (main)
+$ curl $BACKEND/api/reports \
+  -H "Authorization: Bearer $TOKEN"
+{"bookings":[{"id":1,"fullname":"na","email":"68@kmitl.ac.th","phone":"0623432431","checkin":"2026-05-08T00:00:00.000Z","checkout":"2026-05-10T00:00:00.000Z","roomtype":"suite","guests":1,"status":"pending","comment":null,"roomId":3,"createdAt":"2026-05-08T04:10:40.972Z","room":{"id":3,"roomType":"suite","name":"ห้องสวีท","description":"ห้องพักขนาดใหญ่สำหรับครอบครัวหรือกลุ่ม","capacity":4,"price":2500,"createdAt":"2026-05-07T15:43:17.485Z"}}],"summaryByRoom":{"ห้องสวีท":1},"summaryByStatus":{"pending":1},"totalNights":2,"totalBookings":1}
+ADMIN@DESKTOP-0PF233K MINGW64 ~/Documents/1/Booking-app-demo-2025-Labsheet/booking-app-demo-2025 (main)
+$ curl -I $BACKEND/api/rooms
+HTTP/1.1 200 OK
+Date: Fri, 08 May 2026 04:14:00 GMT
+Content-Type: application/json; charset=utf-8
+Connection: keep-alive
+access-control-allow-origin: *
+etag: W/"495-29LLqKN+uENpyeeK8SxT8w+7xJ0"
+rndr-id: acf380d1-b587-46a6
+Server: cloudflare
+vary: Accept-Encoding
+x-powered-by: Express
+x-render-origin-server: Render
+cf-cache-status: DYNAMIC
+CF-RAY: 9f85a2963ed045b1-BKK
+alt-svc: h3=":443"; ma=86400
+
 
 ```
 
