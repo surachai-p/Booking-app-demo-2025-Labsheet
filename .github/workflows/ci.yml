@@ -1,0 +1,77 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  # ─── PART 1: CI (ตรวจสอบไฟล์และรัน Test) ──────────────────────────
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: rms_test
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      # Backend Checks
+      - name: Install backend dependencies
+        run: cd backend && npm install
+      - name: Backend Security Audit
+        run: cd backend && npm audit --audit-level=high || true
+      - name: Generate Prisma client
+        run: cd backend && npx prisma generate
+      - name: Run Backend Tests
+        run: cd backend && npm test
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/rms_test
+
+      # Frontend Checks
+      - name: Install frontend dependencies
+        run: cd frontend && npm install
+      - name: Frontend Security Audit
+        run: cd frontend && npm audit --audit-level=high || true
+      - name: Run Frontend Build Check
+        run: cd frontend && npm run build
+
+  # ─── PART 2: CD (ส่งไป Deploy เมื่อ CI ผ่าน) ────────────────────────
+  deploy:
+    needs: test # จะรันก็ต่อเมื่อ Job test ผ่านเท่านั้น
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # 1. Deploy Backend to Render (ใช้ Deploy Hook)
+      - name: Deploy Backend to Render
+        if: env.RENDER_DEPLOY_HOOK != ''
+        run: curl -X POST ${{ secrets.RENDER_DEPLOY_HOOK }}
+        env:
+          RENDER_DEPLOY_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK }}
+
+      # 2. Deploy Frontend to Vercel (สั่งตรงผ่าน CLI เพื่อความชัวร์)
+      - name: Deploy Frontend to Vercel
+        run: npx vercel@latest deploy --prod --token ${{ secrets.VERCEL_TOKEN }} --yes
+        working-directory: ./frontend
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}

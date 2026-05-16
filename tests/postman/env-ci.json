@@ -1,0 +1,9 @@
+{
+  "name": "RMS-CI",
+  "values": [
+    { "key": "base_url", "value": "http://localhost:3001/api", "enabled": true },
+    { "key": "token",        "value": "", "enabled": true },
+    { "key": "admin_token",  "value": "", "enabled": true },
+    { "key": "waiter_token", "value": "", "enabled": true }
+  ]
+}
