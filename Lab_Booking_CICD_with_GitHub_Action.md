@@ -955,12 +955,16 @@ start newman-report.html       # Windows (Git Bash)
 ```plaintext
 # แนบ screenshot ผลการทดสอบที่นี่  ![alt text](<ภาพถ่ายหน้าจอ 2569-05-07 เวลา 16.01.10.png>)
 
+
 ```
 
 **คำถาม 4.3**: Newman tests ที่เขียนมีการทดสอบทั้ง positive cases (สำเร็จ) และ negative cases (ล้มเหลว) อธิบายให้ครบอย่างน้อย 2 ตัวอย่าง
 
 ```plaintext
-# ตอบคำถามที่นี่
+# ตอบคำถามที่นี่ 
+Positive Case (สำเร็จ): ทดสอบ Login - Success โดยส่งรหัสที่ถูกต้อง ระบบต้องตอบกลับด้วย Status 200 และให้ JWT Token เพื่อเข้าใช้งานส่วน Admin
+
+Negative Case (ล้มเหลว): ทดสอบ Login - Wrong Password โดยส่งรหัสผิด ระบบต้องตอบกลับด้วย Status 401 (Unauthorized) เพื่อป้องกันการบุกรุก
 
 ```
 
@@ -986,7 +990,7 @@ Workflow ที่มีอยู่ใช้ self-hosted runner และทำ
 **คำถาม 5.1**: ทำไม workflow ปัจจุบันถึงใช้ `self-hosted` runner? มีข้อดีข้อเสียอะไรเมื่อเทียบกับ `ubuntu-latest`?
 
 ```plaintext
-# ตอบคำถามที่นี่
+# ตอบคำถามที่นี่ ถ้างานเป็น Standard Build ทั่วไปและไม่ได้ติดเรื่อง Private Network การใช้ ubuntu-latest สะดวกกว่ามาก แต่ถ้าต้อง Deploy เข้า Server ภายในหรือต้องการความเร็วแบบจัดเต็ม Self-hosted คือคำตอบ
 
 ```
 
@@ -2341,8 +2345,20 @@ done
 **คำถาม 10.3**: หลังจากตั้งค่า Helmet แล้ว ให้รัน `curl -I http://localhost:3001/api/rooms` และบันทึก headers ที่ได้ อธิบายว่า header แต่ละตัวป้องกันการโจมตีแบบใด
 
 ```plaintext
-# บันทึก headers และคำอธิบายที่นี่
+# HTTP/1.1 200 OK
+X-Powered-By: Express
+Access-Control-Allow-Origin: *
+Content-Type: application/json; charset=utf-8
+Content-Length: 815
+ETag: W/"32f-N2IHb+8/nRtKjUVAty8ESC0s+kc"
+Date: Wed, 20 May 2026 15:20:08 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5 
 
+โค้ดยังไม่ได้เปิดใช้ Helmet: เพราะไม่เห็น Header ป้องกันภัยตัวไหนโผล่มาเลย แถมยังมี X-Powered-By: Express อยู่
+X-Powered-By: Express (อันตราย): บอกแฮกเกอร์ตรงๆ ว่าใช้ระบบอะไร ทำให้แฮกเกอร์เลือกวิธีเจาะระบบได้ง่ายขึ้น (ถ้าเปิด Helmet ตัวนี้จะถูกลบทิ้งทันที)
+Access-Control-Allow-Origin: * (เสี่ยง): อนุญาตให้ทุกเว็บทั่วโลกดึงข้อมูลไปใช้ได้ ถ้าเป็นข้อมูลส่วนตัวถือว่าอันตรายมาก
+ส่วนที่เหลือ (ETag, Date, Connection): เป็นแค่ค่าตั้งค่าเครือข่ายและเวลาทั่วไป ไม่เกี่ยวกับเรื่องความปลอดภัย
 ```
 
 ---
@@ -2532,7 +2548,7 @@ options: >-
 อธิบายความแตกต่างระหว่าง Continuous Integration (CI) และ Continuous Deployment (CD) พร้อมยกตัวอย่างจาก workflow ที่สร้างในการทดลองนี้
 
 ```plaintext
-# ตอบที่นี่
+# CI คือการตรวจสแกนเพื่อให้มั่นใจว่าโค้ดดีมีคุณภาพ ส่วน CD คือการขนส่งโค้ดนั้นขึ้นไปทำงานบน Server จริงโดยอัตโนมัติ
 
 ```
 
@@ -2540,7 +2556,7 @@ options: >-
 ในโปรเจกต์นี้ Frontend และ Backend ถูก deploy แยกกัน (Vercel vs Render) มีข้อดีและข้อเสียอะไรเมื่อเทียบกับการ deploy บน server เดียวกัน?
 
 ```plaintext
-# ตอบที่นี่
+# แยก Deploy "ปลอดภัย ขยายง่าย เว็บโหลดไว" แต่ต้องแลกกับการตั้งค่าที่ซับซ้อนขึ้นและมีดีเลย์ระหว่าง Server เล็กน้อย
 
 ```
 
@@ -2548,7 +2564,11 @@ options: >-
 Newman CI tests ต่างจาก Post-Deploy Smoke Tests อย่างไร? ทำไมถึงต้องมีทั้งสองแบบ? ยกตัวอย่างสถานการณ์ที่ CI tests ผ่านแต่ Smoke Tests ล้มเหลวได้หรือไม่?
 
 ```plaintext
-# ตอบที่นี่
+# Newman CI Tests (ตรวจโค้ด): เช็กว่า "โค้ดและ Logic ถูกต้องไหม" บนระบบจำลองก่อนจะปล่อยของ
+
+Smoke Tests (ตรวจระบบจริง): เช็กว่า "Server จริงเปิดติดไหม" หลัง Deploy เสร็จ (ดูว่าต่อฐานข้อมูลได้ไหม ไฟร์วอลล์บล็อกรึเปล่า)
+
+ตัวอย่าง CI ผ่าน แต่ Smoke พัง: > โค้ดเขียนมาถูกต้อง 100% (CI ผ่าน) แต่พออัปเดตขึ้น Server จริง ดันใส่รหัสผ่านฐานข้อมูลผิด หรือเปิดไฟร์วอลล์กั้นไว้ ทำให้เว็บใช้งานจริงไม่ได้ (Smoke พัง)
 
 ```
 
@@ -2566,7 +2586,9 @@ Newman CI tests ต่างจาก Post-Deploy Smoke Tests อย่างไ
 | CI Pipeline | OWASP Dep-Check | ? |
 
 ```plaintext
-# ตอบที่นี่
+# Runtime (กันหน้าบ้านพัง): Helmet กันแฮกเกอร์เจาะเบราว์เซอร์, Rate-limit กันบอทยิงรัว, CORS กันเว็บอื่นแอบใช้ API, Bcrypt ล็อกรหัสผ่านให้เป็นความลับต่อให้ฐานข้อมูลหลุด
+
+CI Pipeline (กันโค้ดพังก่อนปล่อย): npm audit & OWASP ตรวจหา Library ค่ายอื่นที่มีช่องโหว่, TruffleHog ตรวจหาคีย์ลับ/รหัสผ่านที่นักพัฒนาเผลอเขียนทิ้งไว้ในโค้ด
 
 ```
 
@@ -2574,7 +2596,7 @@ Newman CI tests ต่างจาก Post-Deploy Smoke Tests อย่างไ
 เหตุใดจึงต้องใช้ GitHub Secrets แทนการเขียนค่า credentials โดยตรงใน workflow YAML file? ถ้าใส่ค่า JWT_SECRET ตรงๆ ใน YAML จะเกิดอะไรขึ้น?
 
 ```plaintext
-# ตอบที่นี่
+# การใส่ JWT_SECRET ตรงๆ ใน YAML เปรียบเสมือนการ "ปั๊มกุญแจบ้านแปะไว้บนการ์ดเชิญ" ที่ใครหยิบไปดูก็ได้ การใช้ GitHub Secrets จึงเป็นมาตรฐานสากลขั้นต่ำที่ทุกโปรเจกต์ต้องทำเพื่อความปลอดภัย
 
 ```
 
@@ -2582,7 +2604,7 @@ Newman CI tests ต่างจาก Post-Deploy Smoke Tests อย่างไ
 อธิบาย Git Flow ที่ใช้ในโปรเจกต์นี้ (develop → staging → main) ทำไมต้องมีหลาย environment แทนที่จะ deploy ตรงจาก develop ไป production เลย?
 
 ```plaintext
-# ตอบที่นี่
+# การมีหลาย Environment (develop → staging → main) คือการสร้าง "ตาข่ายนิรภัย" หลายๆ ชั้น เพื่อรับประกันว่าระบบที่จะส่งถึงมือผู้ใช้งานจริงมีความเสถียร ปลอดภัย และมีคุณภาพดีที่สุด
 
 ```
 
