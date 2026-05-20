@@ -962,14 +962,89 @@ start newman-report.html       # Windows (Git Bash)
 **แนบรูปผลการทดสอบ Newman**:
 
 ```plaintext
-# แนบ screenshot ผลการทดสอบที่นี่
+# ![alt text](image-1.png)
 
 ```
 
 **คำถาม 4.3**: Newman tests ที่เขียนมีการทดสอบทั้ง positive cases (สำเร็จ) และ negative cases (ล้มเหลว) อธิบายให้ครบอย่างน้อย 2 ตัวอย่าง
 
 ```plaintext
-# ตอบคำถามที่นี่
+# Positive vs Negative Test Cases
+Positive Cases — ทดสอบเมื่อทำถูกต้อง
+// ส่งข้อมูลครบถ้วนถูกต้อง
+POST /api/bookings
+{
+  "fullname": "สมชาย ใจดี",
+  "email": "somchai@test.com",
+  "phone": "0812345678",
+  "checkin": "2026-06-01",
+  "checkout": "2026-06-03",
+  "roomId": 1,
+  "guests": 2
+}
+
+// คาดหวัง
+pm.test("Status 201 Created", () => {
+  pm.response.to.have.status(201);
+});
+pm.test("มี id กลับมา", () => {
+  pm.expect(pm.response.json()).to.have.property("id");
+});
+
+2. ดึงรายการห้องพักสำเร็จ
+GET /api/rooms
+
+// คาดหวัง
+pm.test("Status 200 OK", () => {
+  pm.response.to.have.status(200);
+});
+pm.test("ได้ข้อมูลเป็น Array", () => {
+  pm.expect(pm.response.json()).to.be.an("array");
+});
+pm.test("มีข้อมูลห้องพักอย่างน้อย 1 ห้อง", () => {
+  pm.expect(pm.response.json().length).to.be.above(0);
+});
+
+---
+
+Negative Cases — ทดสอบเมื่อทำผิด
+1. จองห้องพักโดยไม่มีข้อมูลครบ
+// ส่งข้อมูลไม่ครบ — ขาด email และ phone
+POST /api/bookings
+{
+  "fullname": "สมชาย ใจดี",
+  "checkin": "2026-06-01",
+  "checkout": "2026-06-03"
+}
+
+// คาดหวัง
+pm.test("Status 400 Bad Request", () => {
+  pm.response.to.have.status(400);
+});
+pm.test("มี error message กลับมา", () => {
+  pm.expect(pm.response.json()).to.have.property("error");
+});
+
+2.Login ด้วยรหัสผ่านผิด
+POST /api/login
+{
+  "username": "admin",
+  "password": "wrongpassword"
+}
+
+// คาดหวัง
+pm.test("Status 401 Unauthorized", () => {
+  pm.response.to.have.status(401);
+});
+pm.test("error บอกว่า credentials ผิด", () => {
+  pm.expect(pm.response.json().error)
+    .to.include("ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง");
+});
+
+Positive Test = ทดสอบว่า "ทำถูกแล้วได้ผลลัพธ์ที่ถูก"
+Negative Test = ทดสอบว่า "ทำผิดแล้วระบบจัดการได้อย่างเหมาะสม"
+
+ขาดอันใดอันหนึ่ง = test ไม่ครอบคลุมพอครับ
 
 ```
 
@@ -995,8 +1070,50 @@ Workflow ที่มีอยู่ใช้ self-hosted runner และทำ
 **คำถาม 5.1**: ทำไม workflow ปัจจุบันถึงใช้ `self-hosted` runner? มีข้อดีข้อเสียอะไรเมื่อเทียบกับ `ubuntu-latest`?
 
 ```plaintext
-# ตอบคำถามที่นี่
+# self-hosted runner
 
+คือใช้เครื่อง/server ของเราเองรัน CI/CD
+
+ข้อดี
+
+Deploy เข้า server จริงได้ง่าย
+เร็วกว่าเพราะ cache ค้างได้
+ใช้ CPU/RAM ได้เยอะ
+เข้า private network ได้
+คุม environment เองได้
+
+ข้อเสีย
+
+ต้องดูแล server เอง
+เสี่ยง security มากกว่า
+เครื่องล่ม = CI ล่ม
+scale ยากกว่า
+environment อาจไม่ clean
+ubuntu-latest
+
+คือใช้ runner ของ GitHub
+
+ข้อดี
+
+setup ง่าย
+ไม่ต้องดูแล infra
+clean environment ทุกครั้ง
+ปลอดภัยกว่า
+
+ข้อเสีย
+
+ช้ากว่าในงานใหญ่
+จำกัด resource
+เข้า internal network ไม่ได้
+deploy production ยุ่งกว่า
+ทำไม workflow นี้ใช้ self-hosted
+
+เพราะเหมาะกับงาน:
+
+deploy production จริง
+ใช้ Docker/Database ภายใน
+ต้องการความเร็ว
+ต้องเข้าถึง server/network ของบริษัท
 ```
 
 ### ขั้นตอนที่ 5.2: วิเคราะห์ข้อจำกัดของ Workflow ปัจจุบัน
@@ -1452,7 +1569,7 @@ jobs:
 | `RAILWAY_PROJECT_ID` | `abc123-...` | Railway → Project → Settings → Project ID |
 | `RAILWAY_BACKEND_URL` | `https://xxx.up.railway.app` | Railway → Service → Settings → Networking |
 
-**ตรวจสอบว่า Secrets ครบถ้วน**:
+***ตรวจสอบว่า Secrets ครบถ้วน***:
 
 ```
 ✅ VERCEL_TOKEN
@@ -1473,7 +1590,7 @@ jobs:
 
 ### ขั้นตอนที่ 9.1: Commit และ Push Code
 
-```bash
+``` bash
 # เพิ่มไฟล์ทั้งหมด
 git add .
 
@@ -1504,7 +1621,7 @@ git push origin main
 **แนบรูป GitHub Actions Workflow ที่ผ่านทั้งหมด**:
 
 ```plaintext
-# แนบ screenshot ที่นี่
+# ![alt text](image.png)
 
 ```
 
@@ -1749,7 +1866,7 @@ curl -I $BACKEND/api/rooms
 **บันทึกผลการทดสอบบน Production**:
 
 ```plaintext
-# วาง output ที่นี่
+# ![alt text](image-2.png)
 
 ```
 
@@ -2503,7 +2620,9 @@ options: >-
 อธิบายความแตกต่างระหว่าง Continuous Integration (CI) และ Continuous Deployment (CD) พร้อมยกตัวอย่างจาก workflow ที่สร้างในการทดลองนี้
 
 ```plaintext
-# ตอบที่นี่
+Continuous Integration (CI) คือการรวมโค้ดจากนักพัฒนาหลายคนเข้าด้วยกันอัตโนมัติ แล้วทดสอบว่าโค้ดทำงานได้ถูกต้องไหม
+
+Continuous Deployment (CD) คือการนำโค้ดที่ผ่านการทดสอบแล้วไป deploy ขึ้น server จริงอัตโนมัติ
 
 ```
 
@@ -2511,7 +2630,29 @@ options: >-
 ในโปรเจกต์นี้ Frontend และ Backend ถูก deploy แยกกัน (Vercel vs Render) มีข้อดีและข้อเสียอะไรเมื่อเทียบกับการ deploy บน server เดียวกัน?
 
 ```plaintext
-# ตอบที่นี่
+# ข้อดีของการ Deploy แยก
+1. Scale แยกกันได้
+Frontend และ Backend รับโหลดต่างกัน สามารถเพิ่มทรัพยากรเฉพาะส่วนที่ต้องการได้
+2. เทคโนโลยีเหมาะสมกับงาน
+
+Vercel เชี่ยวชาญ Frontend (CDN ทั่วโลก, ใกล้ผู้ใช้)
+Render เชี่ยวชาญ Backend (Node.js, Database)
+
+3. Deploy อิสระ
+แก้ Frontend ไม่กระทบ Backend และกลับกัน
+4. Free Tier ได้ทั้งคู่
+ใช้ Vercel ฟรี + Render ฟรี ประหยัดค่าใช้จ่าย
+
+ข้อเสียของการ Deploy แยก
+1. CORS ซับซ้อนขึ้น
+ต้องตั้งค่าให้ Backend อนุญาต domain ของ Vercel
+2. Latency เพิ่มขึ้น
+Frontend → Vercel → Internet → Render → Database มีระยะทางมากกว่า
+3. Render Free Tier Sleep
+Backend หยุดทำงานเมื่อไม่มีคนใช้ ต้องทำ keep-alive
+4. จัดการ Environment Variables ยากขึ้น
+ต้องตั้งค่าทั้ง Vercel และ Render แยกกัน
+
 
 ```
 
@@ -2519,8 +2660,53 @@ options: >-
 Newman CI tests ต่างจาก Post-Deploy Smoke Tests อย่างไร? ทำไมถึงต้องมีทั้งสองแบบ? ยกตัวอย่างสถานการณ์ที่ CI tests ผ่านแต่ Smoke Tests ล้มเหลวได้หรือไม่?
 
 ```plaintext
-# ตอบที่นี่
+# 1. Newman CI Tests คืออะไร
 
+Newman คือ CLI ของ Postman
+ ที่ใช้รัน collection อัตโนมัติ
+
+CI Tests จะรันใน pipeline เช่น GitHub Actions / GitLab CI / Jenkins ก่อน deploy
+
+จุดประสงค์หลัก:
+
+ตรวจ logic ของ API
+ตรวจ unit/integration behavior
+เช็ค request/response
+ป้องกัน code พังตั้งแต่ก่อนขึ้น production
+รันใน environment test/staging
+
+ตัวอย่าง 
+pm.test("Status is 200", function () {
+    pm.response.to.have.status(200);
+});
+
+pm.test("Has token", function () {
+    const json = pm.response.json();
+    pm.expect(json.token).to.exist;
+});
+
+2. Post-Deploy Smoke Tests คืออะไร
+
+Smoke Test คือการตรวจว่า “ระบบจริงหลัง deploy ยังใช้งานได้ไหม”
+
+จะรัน “หลัง deploy เสร็จ”
+
+จุดประสงค์หลัก:
+
+ตรวจว่า production/staging deploy สำเร็จจริง
+ตรวจ infra/network/config จริง
+ตรวจ service สำคัญยังทำงาน
+ตรวจ endpoint หลักยังตอบสนอง
+
+ไม่ได้เน้น test ลึกทุก feature
+แต่เน้น “ระบบยังไม่ตาย”
+
+Login ได้ไหม
+Database ต่อได้ไหม
+API สำคัญตอบ 200 ไหม
+Frontend โหลดไหม
+Redis ทำงานไหม
+Payment service connect ได้ไหม
 ```
 
 **คำถาม 4 — Security Layers**:
@@ -2528,16 +2714,16 @@ Newman CI tests ต่างจาก Post-Deploy Smoke Tests อย่างไ
 
 | ชั้น | เครื่องมือ | ป้องกันอะไร |
 |---|---|---|
-| Runtime | Helmet.js | ? |
-| Runtime | express-rate-limit | ? |
-| Runtime | CORS | ? |
-| Runtime | bcryptjs | ? |
-| CI Pipeline | npm audit | ? |
-| CI Pipeline | TruffleHog | ? |
-| CI Pipeline | OWASP Dep-Check | ? |
+| Runtime | Helmet.js | ป้องกัน XSS, Clickjacking, MIME Sniffing โดยตั้งค่า HTTP Security Headers เช่น Content-Security-Policy, X-Frame-Options |
+| Runtime | express-rate-limit | ป้องกัน Brute Force และ DDoS โดยจำกัดจำนวน request ต่อ IP ในช่วงเวลาที่กำหนด |
+| Runtime | CORS | ป้องกัน Cross-Origin Request Forgery โดยอนุญาตเฉพาะ domain ที่กำหนดเท่านั้นให้เรียก API ได้ |
+| Runtime | bcryptjs | ป้องกันการขโมยรหัสผ่านจาก Database โดย Hash รหัสผ่านก่อนบันทึก แม้ DB รั่วก็ไม่รู้รหัสจริง |
+| CI Pipeline | npm audit | ป้องกัน Known Vulnerabilities โดยตรวจสอบ dependencies ที่มีช่องโหว่ที่รายงานแล้ว |
+| CI Pipeline | TruffleHog | ป้องกันการรั่วไหลของ Secrets เช่น API Key, Token, Password ที่ถูก commit ขึ้น GitHub โดยไม่ตั้งใจ |
+| CI Pipeline | OWASP Dep-Check | ป้องกัน CVE (Common Vulnerabilities) โดยตรวจสอบ dependencies เทียบกับฐานข้อมูลช่องโหว่ของ OWASP |
 
 ```plaintext
-# ตอบที่นี่
+
 
 ```
 
@@ -2545,7 +2731,12 @@ Newman CI tests ต่างจาก Post-Deploy Smoke Tests อย่างไ
 เหตุใดจึงต้องใช้ GitHub Secrets แทนการเขียนค่า credentials โดยตรงใน workflow YAML file? ถ้าใส่ค่า JWT_SECRET ตรงๆ ใน YAML จะเกิดอะไรขึ้น?
 
 ```plaintext
-# ตอบที่นี่
+# 1. โค้ดอยู่บน GitHub = ทุกคนเห็น
+ถ้า Repository เป็น Public คนทั้งโลกเห็น JWT_SECRET ได้เลย
+2. Git History เก็บตลอดกาล
+แม้จะลบบรรทัดนั้นทีหลัง ยังดูได้จาก commit เก่า
+3. TruffleHog จะตรวจเจอ
+ใน CI Pipeline ที่ตั้งค่าไว้ TruffleHog จะ scan แล้ว fail build ทันที
 
 ```
 
@@ -2553,8 +2744,7 @@ Newman CI tests ต่างจาก Post-Deploy Smoke Tests อย่างไ
 อธิบาย Git Flow ที่ใช้ในโปรเจกต์นี้ (develop → staging → main) ทำไมต้องมีหลาย environment แทนที่จะ deploy ตรงจาก develop ไป production เลย?
 
 ```plaintext
-# ตอบที่นี่
-
+# หลาย environment เหมือนมี ด่านกรอง ก่อนถึงผู้ใช้จริง ยิ่งโปรเจกต์ใหญ่และมีผู้ใช้มาก ยิ่งจำเป็นต้องมี
 ```
 
 ---
