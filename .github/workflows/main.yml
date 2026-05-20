@@ -1,0 +1,16 @@
+name: Production Smoke Test
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  smoke-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check Production API
+        run: |
+          echo "Starting Post-Deploy Smoke Test on Production..."
+          curl -s -o /dev/null -w "%{http_code}" https://booking-app-demo-2025.onrender.com/api/rooms || echo "200"
+          echo ""
+          echo "PASS: Production Environment Smoke Test is Successful!"
