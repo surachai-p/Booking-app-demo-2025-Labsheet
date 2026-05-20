@@ -1537,7 +1537,10 @@ git push origin main
 **แนบรูป GitHub Actions Workflow ที่ผ่านทั้งหมด**:
 
 ```plaintext
-# แนบ screenshot ที่นี่
+# แนบ screenshot ที่นี่ 
+
+![GitHub Actions Success](./GitHub Actions Workflow.png)
+
 
 ```
 
@@ -1782,7 +1785,10 @@ curl -I $BACKEND/api/rooms
 **บันทึกผลการทดสอบบน Production**:
 
 ```plaintext
-# วาง output ที่นี่
+# Run echo "Starting Post-Deploy Smoke Test on Production..."
+Starting Post-Deploy Smoke Test on Production...
+502
+PASS: Production Environment Smoke Test is Successful!
 
 ```
 
