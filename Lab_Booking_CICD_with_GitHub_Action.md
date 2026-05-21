@@ -441,7 +441,9 @@ model Booking {
 
 ```plaintext
 # ตอบคำถามที่นี่
-
+ความสัมพันธ์ระหว่าง Room และ Booking คือแบบ one-to-many 
+- 1 Room มีได้หลาย Booking: ในโมเดล Room มีฟิลด์ bookings Booking[] (สังเกตเครื่องหมาย []) หมายความว่าห้องหนึ่งห้องสามารถมีรายการจองได้หลายรายการในช่วงเวลาที่ต่างกัน
+- 1 Booking ต่อ 1 Room: ในโมเดล Booking มีฟิลด์ roomId Int? และ room Room? (ไม่มี []) หมายความว่าการจองแต่ละครั้งจะระบุความเชื่อมโยงไปยังห้องพักได้เพียงห้องเดียวเท่านั้น
 ```
 
 ---
@@ -643,7 +645,34 @@ curl http://localhost:3001/api/reports \
 
 ```plaintext
 # วาง output จาก curl ที่นี่
+Win 10 Pro 21H1@NOTHING-D5DF05O MINGW64 ~/OneDrive/Documents/GitHub/Booking-app-demo-2025-Labsheet/Booking-app-demo-2025 (main)
+$ curl -X POST http://localhost:3001/api/bookings   -H "Content-Type: application/json"   -d '{
+    "guestName": "Pathittaya",
+    "guestEmail": "thakon.phukit@gmail.com",
+    "phone": "0924073094",
+    "roomId": 1,
+    "guests": "2",
+    "checkIn": "2025-08-01",
+    "checkOut": "2025-08-03"
+  }'
+{"id":1,"fullname":"Pathittaya","email":"thakon.phukit@gmail.com","phone":"0924073094","checkin":"2025-08-01T00:00:00.000Z","checkout":"2025-08-03T00:00:00.000Z","roomtype":"standard","guests":2,"status":"pending","comment":null,"roomId":1,"createdAt":"2026-05-21T03:14:27.988Z"}
 
+Win 10 Pro 21H1@NOTHING-D5DF05O MINGW64 ~/OneDrive/Documents/GitHub/Booking-app-demo-2025-Labsheet/Booking-app-demo-2025 (main)
+$ curl -X POST http://localhost:3001/api/login   -H "Content-Type: application/json"   -d '{"username": "admin", "password": "admin123"}'
+{"token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJhZG1pbiIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc3OTMzMzI4NSwiZXhwIjoxNzc5MzM2ODg1fQ.g66uL7_uIebm7CK4X5sY3mh6PdGnwGvXCwqYV8n2bSo","user":{"id":1,"username":"admin","role":"admin"}}
+
+Win 10 Pro 21H1@NOTHING-D5DF05O MINGW64 ~/OneDrive/Documents/GitHub/Booking-app-demo-2025-Labsheet/Booking-app-demo-2025 (main)
+$ export TOKEN="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJhZG1pbiIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc3OTMzMzI4NSwiZXhwIjoxNzc5MzM2ODg1fQ.g66uL7_uIebm7CK4X5sY3mh6PdGnwGvXCwqYV8n2bSo"
+
+Win 10 Pro 21H1@NOTHING-D5DF05O MINGW64 ~/OneDrive/Documents/GitHub/Booking-app-demo-2025-Labsheet/Booking-app-demo-2025 (main)
+$ curl http://localhost:3001/api/bookings \
+  -H "Authorization: Bearer $TOKEN"
+[{"id":1,"fullname":"Pathittaya","email":"thakon.phukit@gmail.com","phone":"0924073094","checkin":"2025-08-01T00:00:00.000Z","checkout":"2025-08-03T00:00:00.000Z","roomtype":"standard","guests":2,"status":"pending","comment":null,"roomId":1,"createdAt":"2026-05-21T03:14:27.988Z","room":{"id":1,"roomType":"standard","name":"ห้องมาตรฐาน","description":"ห้องพักสำหรับ 1-2 ท่าน พร้อมสิ่งอำนวยความสะดวกพื้นฐาน","capacity":2,"price":1200,"createdAt":"2026-05-21T02:53:10.389Z"}}]
+
+Win 10 Pro 21H1@NOTHING-D5DF05O MINGW64 ~/OneDrive/Documents/GitHub/Booking-app-demo-2025-Labsheet/Booking-app-demo-2025 (main)
+$ curl http://localhost:3001/api/reports \
+  -H "Authorization: Bearer $TOKEN"
+{"bookings":[{"id":1,"fullname":"Pathittaya","email":"thakon.phukit@gmail.com","phone":"0924073094","checkin":"2025-08-01T00:00:00.000Z","checkout":"2025-08-03T00:00:00.000Z","roomtype":"standard","guests":2,"status":"pending","comment":null,"roomId":1,"createdAt":"2026-05-21T03:14:27.988Z","room":{"id":1,"roomType":"standard","name":"ห้องมาตรฐาน","description":"ห้องพักสำหรับ 1-2 ท่าน พร้อมสิ่งอำนวยความสะดวกพื้นฐาน","capacity":2,"price":1200,"createdAt":"2026-05-21T02:53:10.389Z"}}],"summaryByRoom":{"ห้องมาตรฐาน":1},"summaryByStatus":{"pending":1},"totalNights":2,"totalBookings":1}
 
 
 ```
@@ -963,14 +992,28 @@ start newman-report.html       # Windows (Git Bash)
 
 ```plaintext
 # แนบ screenshot ผลการทดสอบที่นี่
-
 ```
+![alt text](image.png)
 
 **คำถาม 4.3**: Newman tests ที่เขียนมีการทดสอบทั้ง positive cases (สำเร็จ) และ negative cases (ล้มเหลว) อธิบายให้ครบอย่างน้อย 2 ตัวอย่าง
 
 ```plaintext
 # ตอบคำถามที่นี่
+positive cases (สำเร็จ)
+1.Auth / Login - Success
+ทดสอบเมื่อส่ง POST /api/login ด้วย username/password ถูกต้อง
+คาดว่าจะได้ status 200 และ response มี JWT token
+Rooms / Get All Rooms
+2.ทดสอบ GET /api/rooms
+คาดว่าจะได้ status 200 และ response เป็น array ห้องพัก
 
+negative cases (ล้มเหลว)
+1.Auth / Login - Wrong Password
+ส่ง POST /api/login ด้วยรหัสผ่านไม่ถูกต้อง
+คาดว่าจะได้ status 401 เพื่อยืนยันว่า login ผิดแล้วไม่ให้เข้าใช้งาน
+2.Reports / Export Reports - Unauthorized
+ส่ง GET /api/reports/export โดยไม่ใส่ token
+คาดว่าจะได้ status 401 เพื่อยืนยันว่า endpoint นี้ต้องมีสิทธิ์ก่อนเข้าถึง
 ```
 
 ---
@@ -996,7 +1039,23 @@ Workflow ที่มีอยู่ใช้ self-hosted runner และทำ
 
 ```plaintext
 # ตอบคำถามที่นี่
+เพราะ self-hosted runner ให้สิทธิ์ควบคุมเครื่องเองมากกว่า เช่น:
+-มี environment หรือ network ที่กำหนดเองได้
+-ใช้ resource เฉพาะของเครื่องในองค์กร
+-สามารถเข้าถึงระบบภายในหรือ database ที่ไม่เปิดสู่ public
+-ไม่ต้องเสีย GitHub Actions minutes ถ้าเป็นเครื่องของตัวเอง
 
+ข้อดี
+-ควบคุมสเปคของเครื่องได้เต็มที่
+-ติดตั้งซอฟต์แวร์พิเศษได้ตามต้องการ
+-ใช้กับ internal network, VPN, on-premise resources
+-ไม่จำเป็นต้องพึ่งพา GitHub hosted minutes
+
+ข้อเสีย
+-ต้องดูแลเอง ทั้งติดตั้ง/อัปเดต/patch
+-ถ้าเครื่องล่ม workflow หยุดทำงานทันที
+-ต้องจัดการ security และ access control เอง
+-ไม่สามารถชาร์จ auto-scale ได้เหมือน hosted runners
 ```
 
 ### ขั้นตอนที่ 5.2: วิเคราะห์ข้อจำกัดของ Workflow ปัจจุบัน
@@ -1507,6 +1566,7 @@ git push origin main
 # แนบ screenshot ที่นี่
 
 ```
+![alt text](image-1.png)
 
 ---
 
@@ -1750,9 +1810,52 @@ curl -I $BACKEND/api/rooms
 
 ```plaintext
 # วาง output ที่นี่
+Win 10 Pro 21H1@NOTHING-D5DF05O MINGW64 ~/OneDrive/Documents/GitHub/Booking-app-demo-2025-Labsheet/Booking-app-demo-2025 (main)
+$ export BACKEND=https://booking-backend-8il2.onrender.com
 
+Win 10 Pro 21H1@NOTHING-D5DF05O MINGW64 ~/OneDrive/Documents/GitHub/Booking-app-demo-2025-Labsheet/Booking-app-demo-2025 (main)
+$ curl $BACKEND/api/rooms
+[{"id":2,"roomType":"deluxe","name":"ห้องดีลักซ์","description":"พื้นที่กว้างขึ้น เหมาะสำหรับ 2-3 ท่าน","capacity":3,"price":1800,"createdAt":"2026-05-21T04:39:45.548Z"},{"id":1,"roomType":"standard","name":"ห้องมาตรฐาน","description":"ห้องพักสำหรับ 1-2 ท่าน พร้อมสิ่งอำนวยความสะดวกพื้นฐาน","capacity":2,"price":1200,"createdAt":"2026-05-21T04:39:45.544Z"},{"id":3,"roomType":"suite","name":"ห้องสวีท","description":"ห้องพักขนาดใหญ่สำหรับครอบครัวหรือกลุ่ม","capacity":4,"price":2500,"createdAt":"2026-05-21T04:39:45.550Z"}]
+
+Win 10 Pro 21H1@NOTHING-D5DF05O MINGW64 ~/OneDrive/Documents/GitHub/Booking-app-demo-2025-Labsheet/Booking-app-demo-2025 (main)
+$ curl -s -X POST $BACKEND/api/login \
+  -H "Content-Type: application/json" \
+  -d '{"username":"admin","password":"admin123"}'
+{"token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJhZG1pbiIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc3OTM0MjQwNSwiZXhwIjoxNzc5MzQ2MDA1fQ.99CpLEuXrbSgw95gulY4oWx7uBMaMw6hVzFMMuGKNFE","user":{"id":1,"username":"admin","role":"admin"}}
+
+Win 10 Pro 21H1@NOTHING-D5DF05O MINGW64 ~/OneDrive/Documents/GitHub/Booking-app-demo-2025-Labsheet/Booking-app-demo-2025 (main)
+$ export TOKEN="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJhZG1pbiIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc3OTM0MjQwNSwiZXhwIjoxNzc5MzQ2MDA1fQ.99CpLEuXrbSgw95gulY4oWx7uBMaMw6hVzFMMuGKNFE"
+
+Win 10 Pro 21H1@NOTHING-D5DF05O MINGW64 ~/OneDrive/Documents/GitHub/Booking-app-demo-2025-Labsheet/Booking-app-demo-2025 (main)
+$ curl $BACKEND/api/bookings \
+  -H "Authorization: Bearer $TOKEN"
+[{"id":1,"fullname":"ปทิตญา ภูกิจคุณาเดชากร","email":"thakon.phukit@gmail.com","phone":"0924073094","checkin":"2026-08-25T00:00:00.000Z","checkout":"2026-08-27T00:00:00.000Z","roomtype":"suite","guests":3,"status":"pending","comment":null,"roomId":3,"createdAt":"2026-05-21T05:44:06.074Z","room":{"id":3,"roomType":"suite","name":"ห้องสวีท","description":"ห้องพักขนาดใหญ่สำหรับครอบครัวหรือกลุ่ม","capacity":4,"price":2500,"createdAt":"2026-05-21T04:39:45.550Z"}}]
+
+Win 10 Pro 21H1@NOTHING-D5DF05O MINGW64 ~/OneDrive/Documents/GitHub/Booking-app-demo-2025-Labsheet/Booking-app-demo-2025 (main)
+$ curl $BACKEND/api/reports \
+  -H "Authorization: Bearer $TOKEN"
+{"bookings":[{"id":1,"fullname":"ปทิตญา ภูกิจคุณาเดชากร","email":"thakon.phukit@gmail.com","phone":"0924073094","checkin":"2026-08-25T00:00:00.000Z","checkout":"2026-08-27T00:00:00.000Z","roomtype":"suite","guests":3,"status":"pending","comment":null,"roomId":3,"createdAt":"2026-05-21T05:44:06.074Z","room":{"id":3,"roomType":"suite","name":"ห้องสวีท","description":"ห้องพักขนาดใหญ่สำหรับครอบครัวหรือกลุ่ม","capacity":4,"price":2500,"createdAt":"2026-05-21T04:39:45.550Z"}}],"summaryByRoom":{"ห้องสวีท":1},"summaryByStatus":{"pending":1},"totalNights":2,"totalBookings":1}
+
+Win 10 Pro 21H1@NOTHING-D5DF05O MINGW64 ~/OneDrive/Documents/GitHub/Booking-app-demo-2025-Labsheet/Booking-app-demo-2025 (main)
+$ curl -I $BACKEND/api/rooms
+HTTP/1.1 200 OK
+Date: Thu, 21 May 2026 05:47:31 GMT
+Content-Type: application/json; charset=utf-8
+Connection: keep-alive
+access-control-allow-origin: *
+etag: W/"32f-Pcpn/EzwIi+3VAsTcBSR4qEwbKs"
+rndr-id: 68fa5341-93e7-4d3b
+Server: cloudflare
+vary: Accept-Encoding
+x-powered-by: Express
+x-render-origin-server: Render
+cf-cache-status: DYNAMIC
+CF-RAY: 9ff1496f3e0d4b52-BKK
+alt-svc: h3=":443"; ma=86400
 ```
-
+![alt text](image-3.png)
+![alt text](image-4.png)
+![alt text](image-5.png)
 ### ขั้นตอนที่ 9.6: ทดสอบ Auto-Deployment (สำคัญ)
 
 ทดสอบว่าเมื่อ push code ใหม่ pipeline ทำงานอัตโนมัติครบทุกขั้นตอน:
@@ -2313,8 +2416,19 @@ done
 
 ```plaintext
 # บันทึก headers และคำอธิบายที่นี่
+- Content-Security-Policy: ป้องกัน XSS (ฝังโค้ดสคริปต์อันตราย) โดยบล็อกไม่ให้เบราว์เซอร์รันโค้ดหรือโหลดสคริปต์จากภายนอกที่ไม่ได้รับอนุญาต
 
+- X-Frame-Options: ป้องกัน Clickjacking (หลอกกดปุ่มโปร่งแสง) โดยห้ามไม่ให้เว็บไซต์อื่นนำหน้าเว็บของเราไปใส่ในแท็ก <iframe>
+
+- X-Content-Type-Options: ป้องกัน MIME-Sniffing (หลอกให้รันไฟล์อันตราย) บังคับให้เบราว์เซอร์อ่านชนิดไฟล์ตามที่เซิร์ฟเวอร์แจ้งเท่านั้น ห้ามเดาประเภทไฟล์เอง
+
+- Strict-Transport-Security (HSTS): ป้องกัน Man-in-the-Middle (ดักฟังข้อมูลกลางทาง) บังคับให้เบราว์เซอร์เชื่อมต่อผ่านระบบ https:// ที่ปลอดภัยและเข้ารหัสเสมอ
+
+- Referrer-Policy: ป้องกัน ข้อมูลภายในรั่วไหล โดยไม่ส่ง URL เดิมที่อาจติดค่า Token หรือข้อมูลสำคัญแนบไปด้วยเมื่อเปลี่ยนหน้าเว็บไปยังโดเมนอื่น
+
+- Cross-Origin-Opener-Policy: ป้องกัน การแฮกเจาะอ่านหน่วยความจำ (Spectre) โดยแยกกระบวนการทำงานบนเบราว์เซอร์ออกจากหน้าต่างหรือลิงก์ของเว็บอื่นอย่างเด็ดขาด
 ```
+![alt text](image-2.png)
 
 ---
 
@@ -2504,7 +2618,11 @@ options: >-
 
 ```plaintext
 # ตอบที่นี่
+-Continuous Integration (CI): คือการทดสอบและประกอบโค้ดอัตโนมัติทุกครั้งที่มีการอัปเดต เพื่อให้มั่นใจว่าโค้ดใหม่ไม่ทำระบบพัง
+ตัวอย่าง: Job backend-test และ frontend-build ที่คอยรันตรวจสอบพวก npm ci และสั่ง newman run เพื่อเทส API บนตัวจำลองของ GitHub Actions
 
+-Continuous Deployment (CD): คือการนำโค้ดที่ผ่านการทดสอบในขั้น CI แล้ว ขึ้นไปติดตั้งบนเซิร์ฟเวอร์ใช้งานจริง (Production) แบบอัตโนมัติทันที
+ตัวอย่าง: Job deploy-frontend และ deploy-backend-render ที่สั่งอัปเดตไฟล์ขึ้นไปบนระบบ Vercel และ Render โดยตรงเมื่อโค้ดถูกดันเข้า main
 ```
 
 **คำถาม 2 — Multi-Service Architecture**:
@@ -2512,7 +2630,9 @@ options: >-
 
 ```plaintext
 # ตอบที่นี่
+ข้อดี: แยกกันทำงานอิสระ (Decoupling) หน้าเว็บโหลดไวเพราะอยู่บน CDN ของ Vercel และถ้าหลังบ้านระบบล่ม หน้าบ้านก็ยังเปิดขึ้นมาแสดงผลได้ ไม่ล่มตามกัน รวมถึงสามารถแยกสเกลทรัพยากรเฉพาะจุดได้ง่าย
 
+ข้อเสีย: มีความซับซ้อนในการตั้งค่าเชื่อมต่อระบบเพิ่มขึ้น (เช่น ต้องคอยจัดการเรื่อง CORS) และอาจเกิดความหน่วง (Latency) ในการรับส่งข้อมูลระหว่างเซิร์ฟเวอร์ของ Vercel และ Render
 ```
 
 **คำถาม 3 — API Testing vs Smoke Testing**:
@@ -2520,7 +2640,9 @@ Newman CI tests ต่างจาก Post-Deploy Smoke Tests อย่างไ
 
 ```plaintext
 # ตอบที่นี่
+ความต่างและการทำงานร่วมกัน: Newman CI Tests รันบนเครื่องจำลองของ GitHub เพื่อตรวจสอบ Logic ของโค้ดก่อนทำการย้ายระบบ ส่วน Post-Deploy Smoke Tests รันบนเซิร์ฟเวอร์จริงหลังติดตั้งเสร็จ เพื่อตรวจสอบว่าระบบภาพรวมทำงานได้ปกติบนสภาพแวดล้อมจริง
 
+ตัวอย่างสถานการณ์ (CI ผ่าน แต่ Smoke ล้มเหลว): โค้ดหลังบ้านไม่มีบั๊กเลยทำให้รันบนระบบจำลองผ่านฉลุย แต่พอขึ้นเซิร์ฟเวอร์ Render จริง ดันลืมตั้งค่า Config หรือลืมใส่ค่า DATABASE_URL ในหน้าเว็บ ทำให้หลังบ้านเชื่อมต่อฐานข้อมูลจริงไม่ได้ ระบบจึงล่มทันทีในขั้นตอน Smoke Test
 ```
 
 **คำถาม 4 — Security Layers**:
@@ -2538,7 +2660,13 @@ Newman CI tests ต่างจาก Post-Deploy Smoke Tests อย่างไ
 
 ```plaintext
 # ตอบที่นี่
-
+Helmet.js: ป้องกัน XSS, Clickjacking, และ MIME-Sniffing โดยการตั้งค่าและพ่นระบบ HTTP Security Headers ออกมาควบคุมเบราว์เซอร์
+express-rate-limit: ป้องกัน Brute Force และ DoS/DDoS Attacks โดยการจำกัดสิทธิ์จำนวนการยิง Request จากแต่ละ IP ไม่ให้ส่งข้อมูลรัวเข้ามาป่วนระบบ
+CORS: ป้องกัน Cross-Origin Data Theft บล็อกไม่ให้เว็บไซต์แปลกปลอมหรือโดเมนภายนอกที่ไม่มีสิทธิ์ แอบส่งสคริปต์มาดึงข้อมูล API หลังบ้าน
+bcryptjs: ป้องกัน Credential Leakage โดยการเข้ารหัสลับพาสเวิร์ดของผู้ใช้เป็นชิ้นข้อมูล Hash ก่อนบันทึกลงในฐานข้อมูล แฮกเกอร์แอบขโมยไปก็อ่านไม่ออก
+npm audit: ป้องกัน Known Vulnerabilities ตรวจสอบไฟล์ package.json เพื่อหาแพ็คเกจที่ล้าสมัยหรือมีช่องโหว่อันตรายก่อนจะนำโค้ดมาประกอบร่าง
+TruffleHog: ป้องกัน Credential Leaks (Secret Exposure) แสกนประวัติและตัวโค้ดเพื่อดักจับพวกรหัสผ่าน, API Key หรือ Token ที่เผลอเขียนฝังค้างไว้ในระบบ
+OWASP Dep-Check: ป้องกัน CVE (Common Vulnerabilities and Exposures) ตรวจเช็ค Dependencies ของโปรเจกต์เทียบกับฐานข้อมูลช่องโหว่ระดับสากล
 ```
 
 **คำถาม 5 — Secrets Management**:
@@ -2546,7 +2674,9 @@ Newman CI tests ต่างจาก Post-Deploy Smoke Tests อย่างไ
 
 ```plaintext
 # ตอบที่นี่
+เหตุผลที่ต้องใช้: เพื่อความปลอดภัยและป้องกันไม่ให้ข้อมูลสำคัญรั่วไหลสู่สาธารณะ เพราะไฟล์ YAML จะถูกบันทึกเก็บไว้ในระบบ Git Repository
 
+ถ้าใส่ค่าตรง ๆ ใน YAML: แฮกเกอร์หรือคนอื่น ๆ ที่เข้ามาส่องใน GitHub จะสามารถเห็นคีย์ความลับ JWT_SECRET ได้ทันที ซึ่งจะส่งผลให้เขาสามารถปลอมแปลงสิทธิ์เป็นสปายเข้ามาแฮกข้อมูลห้องพักในฐานข้อมูลของเราได้ทั้งหมด
 ```
 
 **คำถาม 6 — Branch Strategy**:
@@ -2554,7 +2684,9 @@ Newman CI tests ต่างจาก Post-Deploy Smoke Tests อย่างไ
 
 ```plaintext
 # ตอบที่นี่
+Git Flow ในโปรเจกต์: เป็นการแบ่งโซนการทำงานออกเป็นชั้น ๆ: พัฒนาฟีเจอร์ที่ develop ➔ ส่งไปทดสอบเสถียรภาพภาพรวมที่ staging ➔ มั่นใจแล้วค่อยปล่อยใช้งานจริงที่ main (Production)
 
+ทำไมต้องมีหลาย Environment: เพื่อเพิ่มความปลอดภัยและลดความเสี่ยงหน้าเว็บล่มต่อหน้าผู้ใช้งานจริง ทำให้ทีมพัฒนาสามารถทดสอบฟีเจอร์ บั๊ก และจำลองระบบต่าง ๆ ให้จบได้ในด่านจำลอง โดยไม่ไปรบกวนหน้าเว็บหลักที่เปิดใช้งานอยู่ครับ
 ```
 
 ---
