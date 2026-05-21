@@ -249,13 +249,13 @@ RUN chmod +x ./docker-entrypoint.sh
 
 ### Checklist ก่อนเริ่มส่วนที่ 1
 
-- [ ] ติดตั้ง Git for Windows สำเร็จ
-- [ ] `git config --global core.autocrlf` แสดงค่า `false`
-- [ ] VS Code ตั้งค่า `files.eol: "\n"` แล้ว
-- [ ] VS Code ใช้ Git Bash เป็น default terminal
-- [ ] มุมขวาล่าง VS Code แสดง `LF` (ไม่ใช่ `CRLF`)
-- [ ] สร้างและ commit `.gitattributes` แล้ว (ทำหลัง Clone ในส่วนที่ 1.2)
-- [ ] เพิ่ม `sed -i 's/\r$//'` ใน `Dockerfile` แล้ว
+- [✅ ] ติดตั้ง Git for Windows สำเร็จ
+- [✅ ] `git config --global core.autocrlf` แสดงค่า `false`
+- [✅ ] VS Code ตั้งค่า `files.eol: "\n"` แล้ว
+- [✅ ] VS Code ใช้ Git Bash เป็น default terminal
+- [✅ ] มุมขวาล่าง VS Code แสดง `LF` (ไม่ใช่ `CRLF`)
+- [✅ ] สร้างและ commit `.gitattributes` แล้ว (ทำหลัง Clone ในส่วนที่ 1.2)
+- [✅ ] เพิ่ม `sed -i 's/\r$//'` ใน `Dockerfile` แล้ว
 
 ---
 
@@ -441,7 +441,7 @@ model Booking {
 
 ```plaintext
 # ตอบคำถามที่นี่
-
+เป็นความสัมพันธ์แบบ One-to-Many
 ```
 
 ---
@@ -642,7 +642,9 @@ curl http://localhost:3001/api/reports \
 **บันทึกผลการทดสอบ**:
 
 ```plaintext
-# วาง output จาก curl ที่นี่
+# curl http://localhost:3001/api/reports \
+  -H "Authorization: Bearer $TOKEN"
+{"bookings":[{"id":6,"fullname":"kanticha yongcha","email":"somchai@example.com","phone":"0812345678","checkin":"2025-08-01T00:00:00.000Z","checkout":"2025-08-03T00:00:00.000Z","roomtype":"standard","guests":2,"status":"pending","comment":null,"roomId":1,"createdAt":"2026-05-07T08:25:16.572Z","room":{"id":1,"roomType":"standard","name":"ห้องมาตรฐาน","description":"ห้องพักสำหรับ 1-2 ท่าน พร้อมสิ่งอำนวยความสะดวกพื้นฐาน","capacity":2,"price":1200,"createdAt":"2026-05-07T07:46:43.463Z"}},{"id":5,"fullname":"????? ????","email":"somchai@example.com","phone":"0812345678","checkin":"2025-08-01T00:00:00.000Z","checkout":"2025-08-03T00:00:00.000Z","roomtype":"standard","guests":2,"status":"pending","comment":"????????????","roomId":1,"createdAt":"2026-05-07T08:21:26.246Z","room":{"id":1,"roomType":"standard","name":"ห้องมาตรฐาน","description":"ห้องพักสำหรับ 1-2 ท่าน พร้อมสิ่งอำนวยความสะดวกพื้นฐาน","capacity":2,"price":1200,"createdAt":"2026-05-07T07:46:43.463Z"}},{"id":4,"fullname":"????? ????","email":"somchai@example.com","phone":"0812345678","checkin":"2025-08-01T00:00:00.000Z","checkout":"2025-08-03T00:00:00.000Z","roomtype":"standard","guests":2,"status":"pending","comment":"????????????","roomId":1,"createdAt":"2026-05-07T08:11:51.606Z","room":{"id":1,"roomType":"standard","name":"ห้องมาตรฐาน","description":"ห้องพักสำหรับ 1-2 ท่าน พร้อมสิ่งอำนวยความสะดวกพื้นฐาน","capacity":2,"price":1200,"createdAt":"2026-05-07T07:46:43.463Z"}},{"id":3,"fullname":"????? ????","email":"somchai@example.com","phone":"0812345678","checkin":"2025-08-01T00:00:00.000Z","checkout":"2025-08-03T00:00:00.000Z","roomtype":"standard","guests":2,"status":"pending","comment":null,"roomId":1,"createdAt":"2026-05-07T08:09:17.668Z","room":{"id":1,"roomType":"standard","name":"ห้องมาตรฐาน","description":"ห้องพักสำหรับ 1-2 ท่าน พร้อมสิ่งอำนวยความสะดวกพื้นฐาน","capacity":2,"price":1200,"createdAt":"2026-05-07T07:46:43.463Z"}},{"id":2,"fullname":"????? ????","email":"somchai@example.com","phone":"0812345678","checkin":"2025-08-01T00:00:00.000Z","checkout":"2025-08-03T00:00:00.000Z","roomtype":"standard","guests":2,"status":"pending","comment":null,"roomId":1,"createdAt":"2026-05-07T08:06:41.981Z","room":{"id":1,"roomType":"standard","name":"ห้องมาตรฐาน","description":"ห้องพักสำหรับ 1-2 ท่าน พร้อมสิ่งอำนวยความสะดวกพื้นฐาน","capacity":2,"price":1200,"createdAt":"2026-05-07T07:46:43.463Z"}},{"id":1,"fullname":"????? ????","email":"somchai@example.com","phone":"0812345678","checkin":"2025-08-01T00:00:00.000Z","checkout":"2025-08-03T00:00:00.000Z","roomtype":"standard","guests":2,"status":"pending","comment":null,"roomId":1,"createdAt":"2026-05-07T08:05:14.857Z","room":{"id":1,"roomType":"standard","name":"ห้องมาตรฐาน","description":"ห้องพักสำหรับ 1-2 ท่าน พร้อมสิ่งอำนวยความสะดวกพื้นฐาน","capacity":2,"price":1200,"createdAt":"2026-05-07T07:46:43.463Z"}}],"summaryByRoom":{"ห้องมาตรฐาน":6},"summaryByStatus":{"pending":6},"totalNights":12,"totalBookings":6}
 
 
 
@@ -961,16 +963,28 @@ start newman-report.html       # Windows (Git Bash)
 
 **แนบรูปผลการทดสอบ Newman**:
 
-```plaintext
+plaintext
 # แนบ screenshot ผลการทดสอบที่นี่
+![alt text](image.png)
 
-```
 
 **คำถาม 4.3**: Newman tests ที่เขียนมีการทดสอบทั้ง positive cases (สำเร็จ) และ negative cases (ล้มเหลว) อธิบายให้ครบอย่างน้อย 2 ตัวอย่าง
 
 ```plaintext
 # ตอบคำถามที่นี่
+ 1. Positive Cases (สำเร็จ)
+คือการทดสอบว่าระบบ ทำงานได้จริง เมื่อข้อมูลถูกต้อง
 
+Login Success: ส่ง User/Pass ถูกต้อง -> ต้องได้ 200 OK และ Token
+
+Create Booking: ส่งข้อมูลครบตามเงื่อนไข -> ต้องได้ 201 Created และ ID การจอง
+
+2. Negative Cases (ล้มเหลว)
+คือการทดสอบว่าระบบ ป้องกันความผิดพลาด ได้ไหม
+
+Wrong Password: ใส่รหัสผิด -> ต้องโดนปฏิเสธด้วย 401 Unauthorized
+
+Unauthorized Export: ไม่ใส่ Token แต่อยากโหลดรีพอร์ต -> ต้องโดนบล็อกด้วย 401/403
 ```
 
 ---
@@ -996,7 +1010,20 @@ Workflow ที่มีอยู่ใช้ self-hosted runner และทำ
 
 ```plaintext
 # ตอบคำถามที่นี่
+. GitHub-hosted (ubuntu-latest)
+ข้อดี: ง่ายที่สุด แค่เขียนไฟล์ YAML ก็ทำงานได้เลย ไม่ต้องติดตั้งอะไรเพิ่มเติม มีความเสถียรสูง
 
+ข้อเสีย: ปรับแต่งสเปกเครื่องไม่ได้ (เช่น อยากได้ RAM 32GB) และถ้าโปรเจกต์ใหญ่มาก นาทีฟรีอาจจะไม่พอ
+
+2. Self-hosted runner
+ข้อดี: เหมาะกับงานที่ต้องใช้ทรัพยากรสูง (High Performance) หรือต้องเชื่อมต่อกับฐานข้อมูลที่อยู่ภายใน Firewall ของบริษัทที่ GitHub เข้าไม่ถึง
+
+ข้อเสีย: "พังแล้วพังเลย" ถ้าเครื่องเซิร์ฟเวอร์ที่คุณรันไว้ดับ Workflow ก็จะค้าง และต้องระวังเรื่องไฟล์ขยะ (Artifacts) ที่จะพอกพูนในเครื่อง
+
+ใช้ ubuntu-latest เพราะ:
+สะดวก: ไม่ต้องตั้งเซิร์ฟเวอร์ทิ้งไว้ตลอดเวลา
+เพียงพอ: การทดสอบ Newman และการ Build React ไม่ได้ใช้ทรัพยากรหนักเกินไป
+สะอาด: ทุกครั้งที่รัน GitHub จะสร้างเครื่องใหม่ให้ ทำให้มั่นใจได้ว่าไม่มี "ไฟล์ขยะ" จากการรันครั้งก่อนมาทำให้ Test เพี้ยนครับ
 ```
 
 ### ขั้นตอนที่ 5.2: วิเคราะห์ข้อจำกัดของ Workflow ปัจจุบัน
@@ -1710,10 +1737,11 @@ Deployment สำเร็จ
 **ทดสอบ Frontend (Vercel)**:
 
 เปิด browser ไปที่ Vercel URL ของคุณ ทดสอบ:
-- [ ] หน้าแสดงรายการห้องพัก
-- [ ] ฟอร์มการจองทำงาน
-- [ ] หน้า Admin login ทำงาน
-- [ ] Dashboard Admin แสดงข้อมูลถูกต้อง
+- [✅ ] หน้าแสดงรายการห้องพัก
+- [✅ ] ฟอร์มการจองทำงาน
+- [✅ ] ฟอร์มการจองทำงาน
+- [✅ ] หน้า Admin login ทำงาน
+- [✅ ] Dashboard Admin แสดงข้อมูลถูกต้อง
 
 **ทดสอบ Backend (Render) ด้วย curl**:
 
@@ -1748,10 +1776,8 @@ curl -I $BACKEND/api/rooms
 
 **บันทึกผลการทดสอบบน Production**:
 
-```plaintext
-# วาง output ที่นี่
+![alt text](image-3.png)
 
-```
 
 ### ขั้นตอนที่ 9.6: ทดสอบ Auto-Deployment (สำคัญ)
 
@@ -2311,9 +2337,19 @@ done
 
 **คำถาม 10.3**: หลังจากตั้งค่า Helmet แล้ว ให้รัน `curl -I http://localhost:3001/api/rooms` และบันทึก headers ที่ได้ อธิบายว่า header แต่ละตัวป้องกันการโจมตีแบบใด
 
-```plaintext
-# บันทึก headers และคำอธิบายที่นี่
+![alt text](image-4.png)
+```
+Header X-Powered-By: Express ใช้บอกว่าเซิร์ฟเวอร์พัฒนาด้วย Express ซึ่งไม่ได้ช่วยป้องกันการโจมตี และอาจทำให้ผู้โจมตีรู้เทคโนโลยีที่ระบบใช้ได้ง่ายขึ้น
 
+Header Access-Control-Allow-Origin: * อนุญาตให้ทุกเว็บไซต์สามารถเรียก API นี้ได้ จึงสะดวกต่อการใช้งาน แต่ถ้าเปิดกว้างเกินไปอาจเสี่ยงต่อการโจมตีแบบ CORS ได้
+
+Header Content-Type: application/json ระบุว่าข้อมูลที่ส่งกลับเป็น JSON ช่วยให้ browser หรือ client ตีความข้อมูลได้ถูกต้อง ลดปัญหาการอ่านข้อมูลผิดประเภท
+
+Header Content-Length ใช้บอกขนาดของข้อมูลที่ส่งกลับ ไม่มีผลด้านความปลอดภัยโดยตรง แต่ช่วยให้การรับส่งข้อมูลมีประสิทธิภาพมากขึ้น
+
+Header ETag ใช้สำหรับระบบ cache เพื่อช่วยลดการโหลดข้อมูลซ้ำและลดภาระของเซิร์ฟเวอร์
+
+Header Connection: keep-alive และ Keep-Alive ช่วยให้การเชื่อมต่อยังคงเปิดไว้ชั่วคราว ทำให้ส่ง request หลายครั้งได้เร็วขึ้นและลดภาระในการเชื่อมต่อใหม่ทุกครั้ง
 ```
 
 ---
@@ -2457,69 +2493,79 @@ options: >-
 ตรวจสอบว่าทำสำเร็จทุกข้อ:
 
 **การเตรียม Repository**:
-- [ ] Fork repository `booking-app-demo-2025` สำเร็จ
-- [ ] Clone และทำความเข้าใจโครงสร้างโปรเจกต์ทั้งหมด
-- [ ] อ่านและอธิบาย Prisma schema ได้
+- [✅ ] Fork repository `booking-app-demo-2025` สำเร็จ
+- [✅ ] Clone และทำความเข้าใจโครงสร้างโปรเจกต์ทั้งหมด
+- [✅ ] อ่านและอธิบาย Prisma schema ได้
 
 **Local Development**:
-- [ ] รัน PostgreSQL ด้วย Docker Compose สำเร็จ
-- [ ] รัน Prisma migrations สำเร็จ
-- [ ] Backend server ทำงานและ API endpoints ตอบสนองถูกต้อง
-- [ ] Frontend build สำเร็จและแสดงผลใน browser
+- [✅ ] รัน PostgreSQL ด้วย Docker Compose สำเร็จ
+- [✅ ] รัน Prisma migrations สำเร็จ
+- [✅ ] Backend server ทำงานและ API endpoints ตอบสนองถูกต้อง
+- [✅ ] Frontend build สำเร็จและแสดงผลใน browser
 
 **API Testing**:
-- [ ] สร้าง Postman Collection ที่ครอบคลุม endpoints หลัก
-- [ ] รัน Newman tests ในเครื่องผ่านทั้งหมด
-- [ ] ทดสอบทั้ง positive cases และ negative cases
+- [✅ ] สร้าง Postman Collection ที่ครอบคลุม endpoints หลัก
+- [✅ ] รัน Newman tests ในเครื่องผ่านทั้งหมด
+- [✅ ] ทดสอบทั้ง positive cases และ negative cases
 
 **Security**:
-- [ ] ติดตั้งและตั้งค่า Helmet.js ใน backend
-- [ ] ตั้งค่า Rate Limiting สำหรับ API และ Login endpoint
-- [ ] ตั้งค่า CORS อย่างถูกต้อง (ระบุ origin ชัดเจน)
-- [ ] รัน `npm audit` และไม่พบ high/critical vulnerability
-- [ ] Security Scanning Job ทำงานใน GitHub Actions
+- [✅ ] ติดตั้งและตั้งค่า Helmet.js ใน backend
+- [✅ ] ตั้งค่า Rate Limiting สำหรับ API และ Login endpoint
+- [✅ ] ตั้งค่า CORS อย่างถูกต้อง (ระบุ origin ชัดเจน)
+- [✅ ] รัน `npm audit` และไม่พบ high/critical vulnerability
+- [✅ ] Security Scanning Job ทำงานใน GitHub Actions
 
 **GitHub Actions**:
-- [ ] สร้าง workflow ไฟล์ `ci-cd.yml` ที่มีทั้ง CI, Security Scan, CD และ Post-Deploy Test
-- [ ] Workflow ทำงาน automatic เมื่อ push code
-- [ ] Newman tests รันใน CI สำเร็จ
-- [ ] Security scanning job ผ่าน
-- [ ] Post-Deploy Smoke Tests ผ่านบน Production
+- [✅ ] สร้าง workflow ไฟล์ `ci-cd.yml` ที่มีทั้ง CI, Security Scan, CD และ Post-Deploy Test
+- [✅ ] Workflow ทำงาน automatic เมื่อ push code
+- [✅ ] Newman tests รันใน CI สำเร็จ
+- [✅ ] Security scanning job ผ่าน
+- [✅ ] Post-Deploy Smoke Tests ผ่านบน Production
 
 **Cloud Deployment**:
-- [ ] ตั้งค่า Vercel และ deploy frontend สำเร็จ
-- [ ] ตั้งค่า Render และ deploy backend สำเร็จ
-- [ ] ตั้งค่า GitHub Secrets ครบทุกตัว
-- [ ] Smoke tests ผ่านหลัง deployment
-- [ ] ทดสอบ API บน production URL สำเร็จ
+- [✅ ] ตั้งค่า Vercel และ deploy frontend สำเร็จ
+- [✅ ] ตั้งค่า Render และ deploy backend สำเร็จ
+- [✅ ] ตั้งค่า GitHub Secrets ครบทุกตัว
+- [✅ ] Smoke tests ผ่านหลัง deployment
+- [✅ ] ทดสอบ API บน production URL สำเร็จ
 
 **Multi-Environment** (ข้อเพิ่มเติม):
-- [ ] สร้าง GitHub Environments (qa, staging, production)
-- [ ] สร้าง develop branch และ push เพื่อ trigger QA deployment
+- [✅ ] สร้าง GitHub Environments (qa, staging, production)
+- [✅ ] สร้าง develop branch และ push เพื่อ trigger QA deployment
 
 ### 12.2 คำถามทบทวน
 
 **คำถามที่ 1 — CI/CD Fundamentals**:
 อธิบายความแตกต่างระหว่าง Continuous Integration (CI) และ Continuous Deployment (CD) พร้อมยกตัวอย่างจาก workflow ที่สร้างในการทดลองนี้
 
-```plaintext
-# ตอบที่นี่
+```
+Continuous Integration (CI) คือการรวมโค้ดจากนักพัฒนาหลายคนเข้าด้วยกันและทดสอบอัตโนมัติทุกครั้งที่มีการ push code เพื่อเช็กว่า build ได้และไม่มี error เช่น ในการทดลองนี้มีการรัน npm test, npm audit และ Newman tests ผ่าน GitHub Actions
+
+Continuous Deployment (CD) คือการ deploy application อัตโนมัติไปยัง server หรือ production หลังจาก CI ผ่านสำเร็จ เช่น การ deploy Frontend ไปยัง Vercel และ Backend ไปยัง Render อัตโนมัติหลัง merge เข้า branch main
 
 ```
 
 **คำถาม 2 — Multi-Service Architecture**:
 ในโปรเจกต์นี้ Frontend และ Backend ถูก deploy แยกกัน (Vercel vs Render) มีข้อดีและข้อเสียอะไรเมื่อเทียบกับการ deploy บน server เดียวกัน?
 
-```plaintext
-# ตอบที่นี่
+```
+ข้อดีของการ deploy แยก Frontend และ Backend คือสามารถ scale แต่ละส่วนแยกกันได้ ดูแลและ deploy ได้อิสระ หาก Backend ล่ม Frontend ยังทำงานบางส่วนได้ และเลือก platform ที่เหมาะกับแต่ละ service ได้ เช่น Vercel เหมาะกับ Frontend และ Render เหมาะกับ Backend
+
+ข้อเสียคือการตั้งค่าจะซับซ้อนขึ้น ต้องจัดการ CORS, API URL และ environment variables เพิ่ม รวมถึงการ debug ปัญหาข้าม service ทำได้ยากกว่า deploy บน server เดียว
 
 ```
 
 **คำถาม 3 — API Testing vs Smoke Testing**:
 Newman CI tests ต่างจาก Post-Deploy Smoke Tests อย่างไร? ทำไมถึงต้องมีทั้งสองแบบ? ยกตัวอย่างสถานการณ์ที่ CI tests ผ่านแต่ Smoke Tests ล้มเหลวได้หรือไม่?
 
-```plaintext
-# ตอบที่นี่
+```
+Newman CI tests คือการทดสอบ API ในขั้นตอน CI ก่อน deploy เพื่อตรวจสอบว่า endpoint และ logic ทำงานถูกต้อง
+
+Post-Deploy Smoke Tests คือการทดสอบหลัง deploy จริง เพื่อเช็กว่า application บน production ยังทำงานได้ เช่น server เปิดได้ API ติดต่อได้ และ frontend โหลดสำเร็จ
+
+จำเป็นต้องมีทั้งสองแบบ เพราะ CI tests ตรวจ logic ของระบบ ส่วน Smoke Tests ตรวจ environment จริงหลัง deploy
+
+ตัวอย่างกรณี CI tests ผ่านแต่ Smoke Tests ล้มเหลว เช่น code ทำงานปกติใน local แต่ production ตั้งค่า environment variable ผิด หรือ database production เชื่อมต่อไม่ได้
 
 ```
 
@@ -2536,25 +2582,34 @@ Newman CI tests ต่างจาก Post-Deploy Smoke Tests อย่างไ
 | CI Pipeline | TruffleHog | ? |
 | CI Pipeline | OWASP Dep-Check | ? |
 
-```plaintext
-# ตอบที่นี่
+```
+| ชั้น | เครื่องมือ | ป้องกันอะไร |
+|---|---|---|
+| Runtime | Helmet.js | ป้องกัน Clickjacking, XSS และการเปิดเผยข้อมูลบางส่วนผ่าน HTTP headers |
+| Runtime | express-rate-limit | ป้องกัน Brute Force และการยิง request จำนวนมาก |
+| Runtime | CORS | ป้องกันเว็บไซต์อื่นเรียก API โดยไม่ได้รับอนุญาต |
+| Runtime | bcryptjs | ป้องกันการเก็บรหัสผ่านแบบ plain text |
+| CI Pipeline | npm audit | ตรวจหาช่องโหว่ใน package dependencies |
+| CI Pipeline | TruffleHog | ตรวจจับ secrets หรือ API keys ที่หลุดเข้า repository |
+| CI Pipeline | OWASP Dep-Check | ตรวจสอบ dependency ที่มีช่องโหว่ด้านความปลอดภัย |
 
 ```
 
 **คำถาม 5 — Secrets Management**:
 เหตุใดจึงต้องใช้ GitHub Secrets แทนการเขียนค่า credentials โดยตรงใน workflow YAML file? ถ้าใส่ค่า JWT_SECRET ตรงๆ ใน YAML จะเกิดอะไรขึ้น?
 
-```plaintext
-# ตอบที่นี่
+```
+ต้องใช้ GitHub Secrets เพราะช่วยเก็บข้อมูลสำคัญอย่างปลอดภัยและไม่แสดงค่าใน source code หรือ workflow file
 
+ถ้าใส่ JWT_SECRET ตรงๆ ใน YAML ผู้ที่เข้าถึง repository จะเห็น secret ได้ทันที ทำให้สามารถปลอม token หรือโจมตีระบบ authentication ได้
 ```
 
 **คำถาม 6 — Branch Strategy**:
 อธิบาย Git Flow ที่ใช้ในโปรเจกต์นี้ (develop → staging → main) ทำไมต้องมีหลาย environment แทนที่จะ deploy ตรงจาก develop ไป production เลย?
 
-```plaintext
-# ตอบที่นี่
+```Git Flow ในโปรเจกต์นี้ใช้ develop → staging → main โดย develop ใช้สำหรับพัฒนา feature ใหม่, staging ใช้ทดสอบก่อน production และ main ใช้สำหรับ production จริง
 
+การมีหลาย environment ช่วยลดความเสี่ยงในการ deploy เพราะสามารถทดสอบก่อนขึ้น production ได้ หาก deploy ตรงจาก develop ไป production อาจทำให้ feature ที่ยังไม่เสถียรส่งผลกระทบต่อผู้ใช้งานจริง
 ```
 
 ---
