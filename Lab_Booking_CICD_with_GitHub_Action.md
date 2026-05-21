@@ -249,13 +249,13 @@ RUN chmod +x ./docker-entrypoint.sh
 
 ### Checklist ก่อนเริ่มส่วนที่ 1
 
-- [ ] ติดตั้ง Git for Windows สำเร็จ
-- [ ] `git config --global core.autocrlf` แสดงค่า `false`
-- [ ] VS Code ตั้งค่า `files.eol: "\n"` แล้ว
-- [ ] VS Code ใช้ Git Bash เป็น default terminal
-- [ ] มุมขวาล่าง VS Code แสดง `LF` (ไม่ใช่ `CRLF`)
-- [ ] สร้างและ commit `.gitattributes` แล้ว (ทำหลัง Clone ในส่วนที่ 1.2)
-- [ ] เพิ่ม `sed -i 's/\r$//'` ใน `Dockerfile` แล้ว
+- [✅] ติดตั้ง Git for Windows สำเร็จ
+- [✅] `git config --global core.autocrlf` แสดงค่า `false`
+- [✅] VS Code ตั้งค่า `files.eol: "\n"` แล้ว
+- [✅] VS Code ใช้ Git Bash เป็น default terminal
+- [✅] มุมขวาล่าง VS Code แสดง `LF` (ไม่ใช่ `CRLF`)
+- [✅] สร้างและ commit `.gitattributes` แล้ว (ทำหลัง Clone ในส่วนที่ 1.2)
+- [✅] เพิ่ม `sed -i 's/\r$//'` ใน `Dockerfile` แล้ว
 
 ---
 
@@ -440,7 +440,7 @@ model Booking {
 **คำถาม 2.1**: จาก schema นี้ ความสัมพันธ์ระหว่าง `Room` และ `Booking` เป็นแบบใด (one-to-one / one-to-many / many-to-many)? อธิบายเหตุผล
 
 ```plaintext
-# ตอบคำถามที่นี่
+# ตอบ ความสัมพันธ์ระหว่าง Room และ Booking เป็นแบบ one-to-many เนื่องจากห้องพักหนึ่งห้องสามารถถูกจองได้หลายครั้งในช่วงเวลาที่แตกต่างกัน จึงทำให้ Room หนึ่งรายการมีข้อมูล Booking ได้หลายรายการ แต่ในขณะเดียวกัน การจอง (Booking) หนึ่งรายการจะอ้างอิงถึงห้องพัก (Room) ได้เพียงห้องเดียวเท่านั้น ดังนั้นความสัมพันธ์จึงเป็นแบบหนึ่งต่อหลาย (one-to-many) โดย Room เป็นฝั่ง one และ Booking เป็นฝั่ง many
 
 ```
 
@@ -640,9 +640,7 @@ curl http://localhost:3001/api/reports \
 ```
 
 **บันทึกผลการทดสอบ**:
-
-```plaintext
-# วาง output จาก curl ที่นี่
+![ผลการทดลอง](images/output.png)
 
 
 
@@ -960,16 +958,20 @@ start newman-report.html       # Windows (Git Bash)
 > 🪟 **Windows**: ถ้า `start newman-report.html` ไม่ทำงาน ให้เปิด File Explorer แล้วดับเบิลคลิกไฟล์ `newman-report.html` แทน
 
 **แนบรูปผลการทดสอบ Newman**:
-
-```plaintext
-# แนบ screenshot ผลการทดสอบที่นี่
-
-```
+![newman](images/newman_test.png)
 
 **คำถาม 4.3**: Newman tests ที่เขียนมีการทดสอบทั้ง positive cases (สำเร็จ) และ negative cases (ล้มเหลว) อธิบายให้ครบอย่างน้อย 2 ตัวอย่าง
 
 ```plaintext
-# ตอบคำถามที่นี่
+# ตอบ Newman tests ที่เขียนมีการทดสอบทั้งกรณีที่ระบบทำงานสำเร็จ (positive cases) และกรณีที่ระบบทำงานล้มเหลวหรือรับข้อมูลผิดพลาด (negative cases) เพื่อให้มั่นใจว่า API สามารถทำงานได้ถูกต้องในหลายสถานการณ์
+
+ตัวอย่างของ positive case คือการทดสอบสร้างการจองห้องพักด้วยข้อมูลที่ครบถ้วนและถูกต้อง เช่น มีชื่อผู้เข้าพัก อีเมล เบอร์โทร จำนวนผู้เข้าพัก วันที่เข้าพัก และ roomId ที่มีอยู่จริง เมื่อส่ง request ไปยัง API แล้ว ระบบควรตอบกลับด้วยสถานะสำเร็จ เช่น HTTP Status 201 หรือ 200 พร้อมข้อมูลการจองที่ถูกบันทึกในฐานข้อมูล แสดงให้เห็นว่าระบบสามารถทำงานได้ตามปกติ
+
+อีกตัวอย่างหนึ่งของ positive case คือการทดสอบเข้าสู่ระบบด้วย username และ password ที่ถูกต้อง ระบบควรส่ง JWT Token กลับมา เพื่อใช้ยืนยันตัวตนในการเข้าถึง API อื่น ๆ เช่น /api/bookings หรือ /api/reports
+
+สำหรับ negative case ตัวอย่างแรกคือการส่งข้อมูลจองห้องพักไม่ครบ เช่น ไม่ส่งค่า phone หรือ guests ไปใน request ระบบควรปฏิเสธคำขอและตอบกลับด้วย error message เช่น "phone is required, guests is required" เพื่อป้องกันข้อมูลไม่สมบูรณ์ถูกบันทึกเข้าสู่ระบบ
+
+อีกตัวอย่างของ negative case คือการเรียกใช้งาน API ที่ต้องใช้ JWT Token แต่ไม่ได้ส่ง token หรือส่ง token ที่ไม่ถูกต้อง ระบบควรตอบกลับด้วยสถานะ Unauthorized เช่น HTTP 401 เพื่อป้องกันผู้ที่ไม่ได้รับอนุญาตเข้าถึงข้อมูลสำคัญในระบบ
 
 ```
 
@@ -995,7 +997,13 @@ Workflow ที่มีอยู่ใช้ self-hosted runner และทำ
 **คำถาม 5.1**: ทำไม workflow ปัจจุบันถึงใช้ `self-hosted` runner? มีข้อดีข้อเสียอะไรเมื่อเทียบกับ `ubuntu-latest`?
 
 ```plaintext
-# ตอบคำถามที่นี่
+# ตอบ workflow ปัจจุบันเลือกใช้ self-hosted runner เพราะต้องการให้ GitHub Actions ทำงานบนเครื่องหรือเซิร์ฟเวอร์ที่ผู้พัฒนาจัดเตรียมเอง แทนการใช้ runner ของ GitHub อย่าง ubuntu-latest โดยทั่วไปมักใช้ในกรณีที่โปรเจกต์ต้องการ environment เฉพาะ มี dependency พิเศษ หรือต้องเข้าถึงทรัพยากรภายในเครื่อง เช่น Docker, database หรือไฟล์ในเครือข่ายภายใน
+
+ข้อดีของ self-hosted runner คือสามารถควบคุมสภาพแวดล้อมได้ทั้งหมด ผู้พัฒนาสามารถติดตั้งโปรแกรมหรือเครื่องมือที่ต้องใช้ล่วงหน้าได้ ทำให้ workflow ทำงานได้ตรงตามต้องการมากขึ้น นอกจากนี้ยังสามารถลดเวลาการติดตั้ง dependency ซ้ำ ๆ ในทุกครั้งที่รัน และเหมาะกับงานที่ต้องใช้ทรัพยากรสูงหรือทำงานร่วมกับระบบภายในองค์กร
+
+อย่างไรก็ตาม self-hosted runner ก็มีข้อเสีย คือผู้ดูแลต้องรับผิดชอบการติดตั้ง ดูแล และอัปเดตเครื่องเอง รวมถึงต้องจัดการเรื่องความปลอดภัยและความเสถียรของระบบ หากเครื่องปิด อินเทอร์เน็ตมีปัญหา หรือ runner ไม่ทำงาน workflow ก็จะไม่สามารถรันได้ นอกจากนี้ยังอาจมีความเสี่ยงด้านความปลอดภัยมากกว่า เพราะ workflow จะทำงานบนเครื่องจริงของผู้ใช้
+
+ส่วน ubuntu-latest เป็น runner ที่ GitHub จัดเตรียมไว้ให้พร้อมใช้งาน มีข้อดีคือสะดวก ไม่ต้องดูแลเซิร์ฟเวอร์เอง สามารถเริ่มใช้งานได้ทันที และมี environment มาตรฐานที่เหมาะกับงานทั่วไป เช่น การ build หรือ test application แต่ข้อจำกัดคือไม่สามารถปรับแต่งระบบได้มากเท่า self-hosted และทุกครั้งที่ workflow เริ่มต้นจะเป็น environment ใหม่ ทำให้บางครั้งต้องเสียเวลาติดตั้ง dependency เพิ่มเติมทุกครั้งที่รันงาน
 
 ```
 
@@ -1502,11 +1510,7 @@ git push origin main
 4. คลิกที่แต่ละ job เพื่อดู logs รายละเอียด
 
 **แนบรูป GitHub Actions Workflow ที่ผ่านทั้งหมด**:
-
-```plaintext
-# แนบ screenshot ที่นี่
-
-```
+![GitHub Actions](images/GitHub-Actions.png)
 
 ---
 
@@ -1748,8 +1752,8 @@ curl -I $BACKEND/api/rooms
 
 **บันทึกผลการทดสอบบน Production**:
 
-```plaintext
-# วาง output ที่นี่
+![alt text](images/Production.png)
+
 
 ```
 
@@ -2315,7 +2319,20 @@ done
 # บันทึก headers และคำอธิบายที่นี่
 
 ```
+จัดให้เลยครับ เอาแบบภาษามนุษย์ สรุปสั้นๆ ไปใส่ในรายงานได้เลยครับ:
 
+ผลลัพธ์หลังจากเปิดใช้งาน Helmet
+จากการรันคำสั่งทดสอบระบบหลังบ้าน พบว่า Helmet ช่วยเพิ่มความปลอดภัยให้เว็บไซต์ของเรา โดยการส่ง Header ป้องกันการโจมตีหลักๆ ดังนี้ครับ:
+
+Content-Security-Policy (CSP): ป้องกันการแอบฝังโค้ดและสคริปต์อันตราย (XSS) โดยจะบล็อกไม่ให้สคริปต์แปลกปลอมทำงานบนหน้าเว็บ
+
+X-Frame-Options (SAMEORIGIN): ป้องกันการหลอกให้คลิกปุ่ม (Clickjacking) ห้ามเว็บอื่นดึงหน้าเว็บเราไปครอบหรือฝังในระบบของเขา
+
+Strict-Transport-Security (HSTS): บังคับให้เบราว์เซอร์คุยกับเซิร์ฟเวอร์ผ่านระบบ HTTPS เท่านั้น เพื่อกันการดักเอาข้อมูลระหว่างทาง
+
+X-Content-Type-Options (nosniff): บังคับให้เปิดไฟล์ตามชนิดที่เซิร์ฟเวอร์ส่งมาจริงเท่านั้น ป้องกันแฮกเกอร์แอบส่งไฟล์ไวรัสมาเนียนเป็นไฟล์รูปภาพ
+
+Referrer-Policy (no-referrer): ซ่อนที่อยู่ URL ต้นทาง ไม่ให้หลุดไปกับลิงก์ข้างนอกตอนที่คนใช้งานกดคลิกเปลี่ยนหน้าเว็บ
 ---
 
 ## ส่วนที่ 11: การ Debug ปัญหาทั่วไป
@@ -2457,45 +2474,45 @@ options: >-
 ตรวจสอบว่าทำสำเร็จทุกข้อ:
 
 **การเตรียม Repository**:
-- [ ] Fork repository `booking-app-demo-2025` สำเร็จ
-- [ ] Clone และทำความเข้าใจโครงสร้างโปรเจกต์ทั้งหมด
-- [ ] อ่านและอธิบาย Prisma schema ได้
+- [✅] Fork repository `booking-app-demo-2025` สำเร็จ
+- [✅] Clone และทำความเข้าใจโครงสร้างโปรเจกต์ทั้งหมด
+- [✅] อ่านและอธิบาย Prisma schema ได้
 
 **Local Development**:
-- [ ] รัน PostgreSQL ด้วย Docker Compose สำเร็จ
-- [ ] รัน Prisma migrations สำเร็จ
-- [ ] Backend server ทำงานและ API endpoints ตอบสนองถูกต้อง
-- [ ] Frontend build สำเร็จและแสดงผลใน browser
+- [✅] รัน PostgreSQL ด้วย Docker Compose สำเร็จ
+- [✅] รัน Prisma migrations สำเร็จ
+- [✅] Backend server ทำงานและ API endpoints ตอบสนองถูกต้อง
+- [✅] Frontend build สำเร็จและแสดงผลใน browser
 
 **API Testing**:
-- [ ] สร้าง Postman Collection ที่ครอบคลุม endpoints หลัก
-- [ ] รัน Newman tests ในเครื่องผ่านทั้งหมด
-- [ ] ทดสอบทั้ง positive cases และ negative cases
+- [✅] สร้าง Postman Collection ที่ครอบคลุม endpoints หลัก
+- [✅] รัน Newman tests ในเครื่องผ่านทั้งหมด
+- [✅] ทดสอบทั้ง positive cases และ negative cases
 
 **Security**:
-- [ ] ติดตั้งและตั้งค่า Helmet.js ใน backend
-- [ ] ตั้งค่า Rate Limiting สำหรับ API และ Login endpoint
-- [ ] ตั้งค่า CORS อย่างถูกต้อง (ระบุ origin ชัดเจน)
-- [ ] รัน `npm audit` และไม่พบ high/critical vulnerability
-- [ ] Security Scanning Job ทำงานใน GitHub Actions
+- [✅] ติดตั้งและตั้งค่า Helmet.js ใน backend
+- [✅] ตั้งค่า Rate Limiting สำหรับ API และ Login endpoint
+- [✅] ตั้งค่า CORS อย่างถูกต้อง (ระบุ origin ชัดเจน)
+- [✅] รัน `npm audit` และไม่พบ high/critical vulnerability
+- [✅] Security Scanning Job ทำงานใน GitHub Actions
 
 **GitHub Actions**:
-- [ ] สร้าง workflow ไฟล์ `ci-cd.yml` ที่มีทั้ง CI, Security Scan, CD และ Post-Deploy Test
-- [ ] Workflow ทำงาน automatic เมื่อ push code
-- [ ] Newman tests รันใน CI สำเร็จ
-- [ ] Security scanning job ผ่าน
-- [ ] Post-Deploy Smoke Tests ผ่านบน Production
+- [✅] สร้าง workflow ไฟล์ `ci-cd.yml` ที่มีทั้ง CI, Security Scan, CD และ Post-Deploy Test
+- [✅] Workflow ทำงาน automatic เมื่อ push code
+- [✅] Newman tests รันใน CI สำเร็จ
+- [✅] Security scanning job ผ่าน
+- [✅] Post-Deploy Smoke Tests ผ่านบน Production
 
 **Cloud Deployment**:
-- [ ] ตั้งค่า Vercel และ deploy frontend สำเร็จ
-- [ ] ตั้งค่า Render และ deploy backend สำเร็จ
-- [ ] ตั้งค่า GitHub Secrets ครบทุกตัว
-- [ ] Smoke tests ผ่านหลัง deployment
-- [ ] ทดสอบ API บน production URL สำเร็จ
+- [✅] ตั้งค่า Vercel และ deploy frontend สำเร็จ
+- [✅] ตั้งค่า Render และ deploy backend สำเร็จ
+- [✅] ตั้งค่า GitHub Secrets ครบทุกตัว
+- [✅] Smoke tests ผ่านหลัง deployment
+- [✅] ทดสอบ API บน production URL สำเร็จ
 
 **Multi-Environment** (ข้อเพิ่มเติม):
-- [ ] สร้าง GitHub Environments (qa, staging, production)
-- [ ] สร้าง develop branch และ push เพื่อ trigger QA deployment
+- [✅] สร้าง GitHub Environments (qa, staging, production)
+- [✅] สร้าง develop branch และ push เพื่อ trigger QA deployment
 
 ### 12.2 คำถามทบทวน
 
@@ -2504,7 +2521,13 @@ options: >-
 
 ```plaintext
 # ตอบที่นี่
+Continuous Integration (CI) คือกระบวนการรวมโค้ดจากผู้พัฒนาหลายคนเข้าสู่ repository หลักอย่างต่อเนื่อง โดยทุกครั้งที่มีการ push หรือ merge โค้ด ระบบจะทำการ build, test และตรวจสอบคุณภาพของโปรแกรมอัตโนมัติ เพื่อค้นหาข้อผิดพลาดให้เร็วที่สุดก่อนนำไปใช้งานจริง จุดประสงค์หลักของ CI คือช่วยลดปัญหาการรวมโค้ดและทำให้มั่นใจว่าโปรแกรมยังสามารถทำงานได้ถูกต้องหลังมีการแก้ไข
 
+ส่วน Continuous Deployment (CD) คือกระบวนการนำแอปพลิเคชันที่ผ่านการทดสอบแล้วไป deploy ขึ้นสู่เซิร์ฟเวอร์หรือระบบ production แบบอัตโนมัติ ทำให้ผู้ใช้สามารถเข้าถึงเวอร์ชันใหม่ได้ทันทีโดยไม่ต้อง deploy ด้วยตนเอง จุดประสงค์หลักของ CD คือช่วยให้การส่งมอบซอฟต์แวร์รวดเร็วและลดขั้นตอนการทำงานแบบ manual
+
+จาก workflow ในการทดลองนี้ ส่วนของ CI คือ GitHub Actions ที่ทำงานเมื่อมีการ push โค้ดขึ้น GitHub โดยระบบจะทำการติดตั้ง dependencies, run tests และตรวจสอบว่า backend หรือ frontend สามารถ build ได้สำเร็จหรือไม่ รวมถึงการใช้ Newman ทดสอบ API เพื่อยืนยันว่าระบบยังทำงานได้ถูกต้อง
+
+ส่วนของ CD คือการเชื่อม GitHub กับ Render และ Vercel เมื่อ workflow ผ่านการทดสอบแล้ว ระบบจะ deploy backend ไปยัง Render และ deploy frontend ไปยัง Vercel อัตโนมัติ ทำให้เว็บไซต์และ API อัปเดตเป็นเวอร์ชันล่าสุดทันทีหลัง push โค้ดเข้าสู่ repository หลัก จึงถือเป็นตัวอย่างของ Continuous Deployment ในการทดลองนี้
 ```
 
 **คำถาม 2 — Multi-Service Architecture**:
@@ -2512,14 +2535,35 @@ options: >-
 
 ```plaintext
 # ตอบที่นี่
+ในโปรเจกต์นี้ Frontend ถูก deploy บน Vercel ส่วน Backend ถูก deploy บน Render ซึ่งเป็นการแยกส่วนการทำงานออกจากกัน โดยแนวทางนี้มีทั้งข้อดีและข้อเสียเมื่อเทียบกับการ deploy ทุกอย่างไว้บน server เดียวกัน
 
+ข้อดีของการ deploy แยกกันคือสามารถเลือกแพลตฟอร์มที่เหมาะกับแต่ละส่วนของระบบได้ เช่น Vercel เหมาะกับ frontend ที่สร้างด้วย Vite หรือ React เพราะมีระบบ CDN และ optimization สำหรับ static frontend ทำให้เว็บไซต์โหลดเร็ว ส่วน Render เหมาะกับ backend และฐานข้อมูล เพราะรองรับ Node.js, Docker และ PostgreSQL ได้สะดวก นอกจากนี้ยังช่วยให้สามารถ deploy หรือแก้ไข frontend และ backend แยกจากกันได้ หากมีการแก้เฉพาะหน้าเว็บก็ไม่จำเป็นต้อง redeploy backend ทั้งระบบ ทำให้การพัฒนาและดูแลง่ายขึ้น อีกทั้งยังสามารถ scale แต่ละส่วนแยกกันได้ เช่น เพิ่มทรัพยากรเฉพาะ backend โดยไม่กระทบ frontend
+
+อย่างไรก็ตาม การ deploy แยกกันก็มีข้อเสียเช่นกัน เช่น ต้องจัดการ Environment Variables และการเชื่อมต่อระหว่าง frontend กับ backend เพิ่มเติม โดย frontend ต้องรู้ URL ของ backend ผ่านตัวแปรอย่าง VITE_API_URL นอกจากนี้ยังอาจมีปัญหาเรื่อง CORS หาก backend ไม่อนุญาตให้ frontend จากอีก domain เรียกใช้งาน API รวมถึงการ debug อาจซับซ้อนขึ้น เพราะระบบกระจายอยู่หลายแพลตฟอร์ม ต้องตรวจสอบ log จากหลายที่
+
+เมื่อเทียบกับการ deploy บน server เดียวกัน การ deploy รวมกันจะตั้งค่าง่ายกว่าและไม่ต้องจัดการหลาย domain หรือหลาย service แต่ก็มีข้อจำกัดเรื่องความยืดหยุ่นและการ scale ระบบ เพราะ frontend และ backend จะใช้ทรัพยากรร่วมกันทั้งหมด หากส่วนใดส่วนหนึ่งมีปัญหาอาจส่งผลกระทบต่อทั้งระบบได้ง่ายกว่า
 ```
 
 **คำถาม 3 — API Testing vs Smoke Testing**:
 Newman CI tests ต่างจาก Post-Deploy Smoke Tests อย่างไร? ทำไมถึงต้องมีทั้งสองแบบ? ยกตัวอย่างสถานการณ์ที่ CI tests ผ่านแต่ Smoke Tests ล้มเหลวได้หรือไม่?
 
 ```plaintext
-# ตอบที่นี่
+# ตอบที่นี่ Newman CI tests และ Post-Deploy Smoke Tests เป็นการทดสอบระบบอัตโนมัติที่มีจุดประสงค์ต่างกัน แม้ว่าทั้งสองแบบจะช่วยตรวจสอบความถูกต้องของระบบเหมือนกันก็ตาม
+
+Newman CI tests คือการทดสอบ API ในขั้นตอน Continuous Integration (CI) โดยจะรันระหว่างกระบวนการ build และ test ก่อนนำระบบไป deploy จริง จุดประสงค์คือเพื่อตรวจสอบว่าโค้ดที่พัฒนาใหม่ยังทำงานได้ถูกต้อง เช่น การ login, การสร้าง booking หรือการตรวจสอบ validation ต่าง ๆ หาก test ไม่ผ่าน workflow จะหยุดทันทีเพื่อป้องกันไม่ให้โค้ดที่มีปัญหาถูก deploy ไปยัง production
+
+ส่วน Post-Deploy Smoke Tests คือการทดสอบหลังจาก deploy ระบบขึ้นเซิร์ฟเวอร์จริงแล้ว โดยจะตรวจสอบว่าระบบที่รันอยู่บน environment จริงยังทำงานได้ เช่น API เปิดใช้งานได้จริง ฐานข้อมูลเชื่อมต่อได้ และ endpoint สำคัญตอบสนองปกติ จุดประสงค์หลักคือยืนยันว่า deployment สำเร็จและระบบพร้อมใช้งานสำหรับผู้ใช้
+
+เหตุผลที่ต้องมีทั้งสองแบบ เพราะ CI tests ตรวจสอบ “ตัวโค้ด” ก่อน deploy ขณะที่ Smoke Tests ตรวจสอบ “สภาพแวดล้อมจริงหลัง deploy” ซึ่งอาจมีปัญหาที่ไม่เกี่ยวกับตัวโค้ดโดยตรง เช่น configuration หรือ infrastructure
+
+ตัวอย่างสถานการณ์ที่ CI tests ผ่าน แต่ Smoke Tests ล้มเหลวได้ เช่น:
+
+โค้ด backend ทำงานถูกต้องใน CI แต่หลัง deploy บน Render ใส่ DATABASE_URL ผิด ทำให้ API เชื่อมฐานข้อมูลไม่ได้
+frontend build ผ่านใน Vercel แต่ตั้งค่า VITE_API_URL ผิด ทำให้ frontend เรียก backend ไม่ได้
+backend deploy สำเร็จ แต่ service ยังไม่พร้อมใช้งานหรือ container crash หลังเริ่มต้นจริง
+JWT_SECRET หรือ Environment Variables บางตัวไม่ได้ถูกตั้งค่าใน production แม้ว่าใน CI จะใช้ค่า mock หรือ local environment ได้ปกติ
+
+ดังนั้น CI tests ช่วยป้องกันปัญหาจากตัวโปรแกรม ส่วน Smoke Tests ช่วยยืนยันว่าระบบที่ deploy แล้วสามารถทำงานได้จริงใน production environment จึงควรมีทั้งสองแบบร่วมกันเพื่อเพิ่มความมั่นใจในคุณภาพของระบบ
 
 ```
 
@@ -2538,6 +2582,15 @@ Newman CI tests ต่างจาก Post-Deploy Smoke Tests อย่างไ
 
 ```plaintext
 # ตอบที่นี่
+| ชั้น        | เครื่องมือ                                                                                       | ป้องกันอะไร                                                                                                                                                                                 |
+| ----------- | ------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Runtime     | [Helmet.js](https://helmetjs.github.io/?utm_source=chatgpt.com)                                  | ช่วยเพิ่ม HTTP Security Headers ให้กับ Express application เพื่อป้องกันการโจมตีทางเว็บหลายรูปแบบ เช่น Cross-Site Scripting (XSS), Clickjacking และการเปิดเผยข้อมูลสำคัญผ่าน browser headers |
+| Runtime     | [express-rate-limit](https://www.npmjs.com/package/express-rate-limit?utm_source=chatgpt.com)    | จำกัดจำนวน request ที่ผู้ใช้สามารถเรียก API ได้ในช่วงเวลาหนึ่ง เพื่อป้องกันการโจมตีแบบ Brute Force, API Abuse และ Denial-of-Service (DoS)                                                   |
+| Runtime     | [CORS](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS?utm_source=chatgpt.com)            | ควบคุมว่า domain ใดสามารถเรียกใช้งาน API ได้ ช่วยป้องกันการเรียก API จากเว็บไซต์ที่ไม่ได้รับอนุญาต และลดความเสี่ยงจาก Cross-Origin attacks                                                  |
+| Runtime     | [bcryptjs](https://www.npmjs.com/package/bcryptjs?utm_source=chatgpt.com)                        | ใช้ hash รหัสผ่านก่อนบันทึกลงฐานข้อมูล เพื่อป้องกันการรั่วไหลของ password จริง หากฐานข้อมูลถูกโจมตีหรือถูกขโมยข้อมูล                                                                        |
+| CI Pipeline | [npm audit](https://docs.npmjs.com/cli/v10/commands/npm-audit?utm_source=chatgpt.com)            | ตรวจสอบ dependency ของ Node.js ว่ามี package ที่มีช่องโหว่ด้านความปลอดภัยหรือไม่ เพื่อป้องกันการใช้ library ที่มี known vulnerabilities                                                     |
+| CI Pipeline | [TruffleHog](https://trufflesecurity.com/trufflehog?utm_source=chatgpt.com)                      | ตรวจจับ secret หรือข้อมูลสำคัญที่หลุดเข้า repository เช่น API keys, JWT secrets, database passwords หรือ access tokens                                                                      |
+| CI Pipeline | [OWASP Dependency-Check](https://owasp.org/www-project-dependency-check/?utm_source=chatgpt.com) | วิเคราะห์ dependency และเปรียบเทียบกับฐานข้อมูลช่องโหว่ความปลอดภัย (CVE) เพื่อค้นหา library ที่มีความเสี่ยงและอาจถูกโจมตีได้                                                                |
 
 ```
 
@@ -2546,7 +2599,9 @@ Newman CI tests ต่างจาก Post-Deploy Smoke Tests อย่างไ
 
 ```plaintext
 # ตอบที่นี่
+GitHub Secrets ถูกใช้เพื่อเก็บข้อมูลสำคัญหรือ credentials เช่น API keys, database passwords, JWT secrets และ access tokens อย่างปลอดภัย โดยค่าจะถูกเข้ารหัสและซ่อนจากผู้ใช้งานทั่วไปใน repository ทำให้ workflow สามารถเรียกใช้งาน secret ได้โดยไม่ต้องเปิดเผยค่าจริงใน source code หรือไฟล์ YAML
 
+เหตุผลที่ไม่ควรเขียน credentials ตรง ๆ ใน workflow YAML file เพราะไฟล์ workflow ถูกเก็บอยู่ใน Git repository ซึ่งผู้ที่เข้าถึง repository สามารถมองเห็นค่าเหล่านั้นได้ทันที หาก repository เป็น public ความเสี่ยงจะยิ่งสูงขึ้น เนื่องจากข้อมูลสำคัญอาจถูกนำไปใช้โจมตีระบบหรือเข้าถึงบริการต่าง ๆ โดยไม่ได้รับอนุญาต
 ```
 
 **คำถาม 6 — Branch Strategy**:
@@ -2554,7 +2609,15 @@ Newman CI tests ต่างจาก Post-Deploy Smoke Tests อย่างไ
 
 ```plaintext
 # ตอบที่นี่
+Git Flow ในโปรเจกต์นี้ใช้โครงสร้าง branch แบบ develop → staging → main เพื่อแบ่งขั้นตอนการพัฒนา ทดสอบ และนำระบบขึ้นใช้งานจริงอย่างเป็นลำดับ โดยแต่ละ branch จะเชื่อมกับ environment ที่แตกต่างกันเพื่อช่วยควบคุมคุณภาพและลดความเสี่ยงของระบบ
 
+Branch develop ใช้สำหรับการพัฒนาและรวม feature ใหม่ ๆ ของทีม นักพัฒนาจะ push และทดสอบโค้ดในขั้นตอนแรกบน environment สำหรับ development ซึ่งอาจยังมี bug หรือฟังก์ชันที่กำลังพัฒนาอยู่ การ deploy จาก branch นี้มักใช้เพื่อทดสอบภายในและตรวจสอบว่าโค้ดสามารถ build และทำงานพื้นฐานได้
+
+เมื่อระบบใน develop มีความเสถียรมากขึ้น จะมีการ merge ไปยัง branch staging ซึ่งเป็น environment สำหรับทดสอบก่อน production โดย staging จะมีสภาพแวดล้อมใกล้เคียงกับ production มากที่สุด เช่น ใช้ database จริงบางส่วน หรือ configuration ที่คล้ายระบบจริง ทีม QA หรือผู้เกี่ยวข้องสามารถทดสอบ end-to-end, integration tests และ smoke tests ได้ในขั้นตอนนี้ เพื่อค้นหาปัญหาที่อาจไม่พบใน development environment
+
+หลังจากผ่านการทดสอบทั้งหมดแล้ว จึง merge ไปยัง branch main ซึ่งเป็น branch สำหรับ production environment ที่ผู้ใช้งานจริงเข้าถึงได้ ระบบจะ deploy ไปยัง production อัตโนมัติผ่าน CI/CD pipeline เพื่อให้มั่นใจว่าเฉพาะโค้ดที่ผ่านการตรวจสอบและทดสอบแล้วเท่านั้นที่จะถูกนำขึ้นใช้งานจริง
+
+เหตุผลที่ต้องมีหลาย environment แทนการ deploy จาก develop ไป production โดยตรง เพราะการพัฒนา software มักมีความเสี่ยงจาก bug, configuration errors หรือปัญหาที่เกิดเฉพาะใน environment จริง หาก deploy ตรงจาก develop ไป production ทุกครั้ง ผู้ใช้งานจริงอาจได้รับผลกระทบจากโค้ดที่ยังไม่เสถียร นอกจากนี้ยังทำให้ยากต่อการตรวจสอบและ rollback ปัญหา
 ```
 
 ---
