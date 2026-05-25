@@ -440,8 +440,11 @@ model Booking {
 **คำถาม 2.1**: จาก schema นี้ ความสัมพันธ์ระหว่าง `Room` และ `Booking` เป็นแบบใด (one-to-one / one-to-many / many-to-many)? อธิบายเหตุผล
 
 ```plaintext
-# ตอบคำถามที่นี่
+ความสัมพันธ์ระหว่าง Room และ Booking เป็นแบบ One-to-Many (หนึ่งต่อกลุ่ม):
 
+ห้องพัก 1 ห้อง มีได้หลายรายการจอง: สังเกตจากโมเดล Room มีฟิลด์ bookings Booking[] (เป็น Array)
+
+การจอง 1 รายการ ผูกได้แค่ 1 ห้อง: สังเกตจากโมเดล Booking มีฟิลด์ room Room? (ระบุเป็นก้อนเดี่ยว ไม่มีเครื่องหมาย [] และไม่มี @unique ค้ำไว้)
 ```
 
 ---
@@ -644,7 +647,36 @@ curl http://localhost:3001/api/reports \
 ```plaintext
 # วาง output จาก curl ที่นี่
 
+curl http://localhost:3001/api/rooms
+[{"id":2,"roomType":"deluxe","name":"ห้องดีลักซ์","description":"พื้นที่กว้างขึ้น เหมาะสำหรับ 2-3 ท่าน","capacity":3,"price":1800,"createdAt":"2026-05-12T22:51:34.720Z"},{"id":1,"roomType":"standard","name":"ห้องมาตรฐาน","description":"ห้องพักสำหรับ 1-2 ท่าน พร้อมสิ่งอำนวยความสะดวกพื้นฐาน","capacity":2,"price":1200,"createdAt":"2026-05-12T22:51:34.717Z"},{"id":3,"roomType":"suite","name":"ห้องสวีท","description":"ห้องพักขนาดใหญ่สำหรับครอบครัวหรือกลุ่ม","capacity":4,"price":2500,"createdAt":"2026-05-12T22:51:34.722Z"}]
 
+curl -X POST http://localhost:3001/api/bookings \
+  -H "Content-Type: application/json" \
+  -d '{
+    "guestName": "Nattawan Changkeb",
+    "guestEmail": "68030085@kmitl.ac.th",
+    "phone": "0984700509",
+    "roomId": 1,
+    "guests": "1",
+    "checkIn": "2025-08-01",
+    "checkOut": "2025-08-03"
+  }'
+{"id":1,"fullname":"Nattawan Changkeb","email":"68030085@kmitl.ac.th","phone":"0984700509","checkin":"2025-08-01T00:00:00.000Z","checkout":"2025-08-03T00:00:00.000Z","roomtype":"standard","guests":1,"status":"pending","comment":null,"roomId":1,"createdAt":"2026-05-22T07:56:23.022Z"}
+
+curl -X POST http://localhost:3001/api/login \
+  -H "Content-Type: application/json" \
+  -d '{"username": "admin", "password": "admin123"}'
+{"token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJhZG1pbiIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc3OTQzNjU5MSwiZXhwIjoxNzc5NDQwMTkxfQ.ajDDpwInpcl-ACYkFPHz8dEOnkOfBYPkXI23Tk_tZr8","user":{"id":1,"username":"admin","role":"admin"}}
+
+export TOKEN="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJhZG1pbiIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc3OTQzNjU5MSwiZXhwIjoxNzc5NDQwMTkxfQ.ajDDpwInpcl-ACYkFPHz8dEOnkOfBYPkXI23Tk_tZr8"
+
+curl http://localhost:3001/api/bookings \
+  -H "Authorization: Bearer $TOKEN"
+[{"id":1,"fullname":"Nattawan Changkeb","email":"68030085@kmitl.ac.th","phone":"0984700509","checkin":"2025-08-01T00:00:00.000Z","checkout":"2025-08-03T00:00:00.000Z","roomtype":"standard","guests":1,"status":"pending","comment":null,"roomId":1,"createdAt":"2026-05-22T07:56:23.022Z","room":{"id":1,"roomType":"standard","name":"ห้องมาตรฐาน","description":"ห้องพักสำหรับ 1-2 ท่าน พร้อมสิ่งอำนวยความสะดวกพื้นฐาน","capacity":2,"price":1200,"createdAt":"2026-05-12T22:51:34.717Z"}}]
+
+curl http://localhost:3001/api/reports \
+  -H "Authorization: Bearer $TOKEN"
+{"bookings":[{"id":1,"fullname":"Nattawan Changkeb","email":"68030085@kmitl.ac.th","phone":"0984700509","checkin":"2025-08-01T00:00:00.000Z","checkout":"2025-08-03T00:00:00.000Z","roomtype":"standard","guests":1,"status":"pending","comment":null,"roomId":1,"createdAt":"2026-05-22T07:56:23.022Z","room":{"id":1,"roomType":"standard","name":"ห้องมาตรฐาน","description":"ห้องพักสำหรับ 1-2 ท่าน พร้อมสิ่งอำนวยความสะดวกพื้นฐาน","capacity":2,"price":1200,"createdAt":"2026-05-12T22:51:34.717Z"}}],"summaryByRoom":{"ห้องมาตรฐาน":1},"summaryByStatus":{"pending":1},"totalNights":2,"totalBookings":1}
 
 ```
 
@@ -960,17 +992,53 @@ start newman-report.html       # Windows (Git Bash)
 > 🪟 **Windows**: ถ้า `start newman-report.html` ไม่ทำงาน ให้เปิด File Explorer แล้วดับเบิลคลิกไฟล์ `newman-report.html` แทน
 
 **แนบรูปผลการทดสอบ Newman**:
+![alt text](image.png)
 
-```plaintext
-# แนบ screenshot ผลการทดสอบที่นี่
-
-```
 
 **คำถาม 4.3**: Newman tests ที่เขียนมีการทดสอบทั้ง positive cases (สำเร็จ) และ negative cases (ล้มเหลว) อธิบายให้ครบอย่างน้อย 2 ตัวอย่าง
 
 ```plaintext
-# ตอบคำถามที่นี่
+🟢 ตัวอย่างที่ 1: Positive Case (กรณีทดสอบทำงานสำเร็จ)
+กรณีทดสอบ: 1. POST /api/login (การเข้าสู่ระบบด้วยข้อมูลที่ถูกต้อง)
 
+การทำงานและข้อมูลที่ส่ง: ส่ง Request แบบ POST พร้อมแนบ Payload บัญชีผู้ดูแลระบบที่ถูกต้อง ("username": "admin", "password": "admin123") ไปยัง Endpoint /api/login
+
+การตรวจสอบผลลัพธ์ (Assertions):
+
+ตรวจสอบว่าระบบตอบกลับมาด้วย HTTP Status Code 200 OK (สำเร็จ)
+
+ตรวจสอบว่าในข้อมูล Response มีคุณสมบัติ token ที่เป็นข้อความยาว และข้อมูลผู้ใช้มีสิทธิ์ทำงานเป็น "role": "admin" จริง
+
+มีการบันทึกค่าเก็บลงตัวแปรสภาพแวดล้อม (pm.environment.set("token", ...)) เพื่อส่งต่อไปใช้ในการทดสอบขั้นถัดไป
+
+🟢 ตัวอย่างที่ 2: Positive Case (กรณีทดสอบทำงานสำเร็จ)
+กรณีทดสอบ: 2. POST /api/bookings (การสร้างรายการจองห้องพักใหม่)
+
+การทำงานและข้อมูลที่ส่ง: ส่ง Request แบบ POST เพื่อจองห้องพักประเภทมาตรฐาน ("roomtype": "standard") พร้อมระบุข้อมูลผู้เข้าพักและวันที่เช็คอิน/เช็คเอาท์ที่สมบูรณ์ถูกต้อง
+
+การตรวจสอบผลลัพธ์ (Assertions):
+
+ตรวจสอบว่าเซิร์ฟเวอร์ตอบกลับมาด้วย HTTP Status Code 201 Created (สร้างข้อมูลสำเร็จ)
+
+ตรวจสอบโครงสร้างข้อมูลว่ามีตัวแปร id เพิ่มขึ้นมาจริง และระบบมีการกำหนดสถานะเริ่มต้นให้เป็นค่า pending (รอนุมัติ) โดยอัตโนมัติ
+
+🔴 ตัวอย่างที่ 1: Negative Case (กรณีทดสอบการรับมือข้อผิดพลาด)
+กรณีทดสอบ: 4. GET /api/bookings (NO token - Negative) (การปฏิเสธการเข้าถึงเมื่อไม่มี Token)
+
+การทำงานและข้อมูลที่ส่ง: พยายามยิงสแกนดึงข้อมูลรายการจองห้องพักทั้งหมดผ่าน Request แบบ GET ไปยัง Endpoint /api/bookings โดยจงใจเอาส่วน Headers ของ Authorization ออก (ไม่มีการส่ง Token ไป)
+
+การตรวจสอบผลลัพธ์ (Assertions):
+
+ตรวจสอบว่าระบบมีความปลอดภัยและปฏิเสธคำขอโดยส่ง HTTP Status Code 401 Unauthorized กลับมา
+
+ตรวจสอบว่าระบบส่งข้อความแจ้งเตือนข้อผิดพลาดเกี่ยวกับการล็อกอินกลับมา ("error": "เข้าสู่ระบบ") และต้องไม่มีข้อมูล id ของประวัติการจองหลุดรั่วออกมาอย่างเด็ดขาด
+
+🔴 ตัวอย่างที่ 2: Negative Case (ประยุกต์จากการทำงานต่อเนื่องในระบบ)
+กรณีทดสอบ: การทำงานต่อเนื่องในขั้นที่ 5, 6, 7 ร่วมกับค่าสภาพแวดล้อม (Environment Unset)
+
+การทำงานและข้อมูลที่ส่ง: ในขั้นสุดท้าย 7. DELETE /api/bookings/:id หลังจากที่ทำลายข้อมูลรายการจองสำเร็จแล้ว โค้ดมีการสั่งเคลียร์ล้างค่าตัวแปรตัวบ่งชี้ทิ้งผ่านคำสั่ง pm.environment.unset("bookingId");
+
+พฤติกรรมเชิงลบ (Negative Behavior): คำสั่ง unset นี้ถูกเขียนเพื่อช่วยให้มั่นใจว่าในรอบการเทสถัดไป หากระบบพยายามนำตัวแปรเดิมไปเรียกใช้งานซ้ำเพื่อทำรายการ (เช่น ดึงข้อมูล หรือ แก้ไข) เซิร์ฟเวอร์จะมองเห็นค่านี้เป็นค่าว่าง หรือส่งค่าผิดพลาดไปยัง Endpoint จนนำไปสู่ผลลัพธ์ 404 Not Found เพื่อเป็นการป้องกันการเข้าถึงทรัพยากรที่ไม่มีอยู่จริงในฐานข้อมูล
 ```
 
 ---
@@ -995,7 +1063,21 @@ Workflow ที่มีอยู่ใช้ self-hosted runner และทำ
 **คำถาม 5.1**: ทำไม workflow ปัจจุบันถึงใช้ `self-hosted` runner? มีข้อดีข้อเสียอะไรเมื่อเทียบกับ `ubuntu-latest`?
 
 ```plaintext
-# ตอบคำถามที่นี่
+ทำไมถึงใช้ Self-Hosted Runner? =>
+เพราะโค้ดต้องการสั่งรันและเชื่อมต่อกับ ฐานข้อมูล PostgreSQL (localhost:5432) ที่อยู่ใน Docker บนเครื่องเรา โดยตรง ซึ่งระบบคลาวด์ปกติจะวิ่งเข้ามาไม่ถึง
+
+ข้อดี - ข้อเสีย (เทียบกับ ubuntu-latest) =>
+Self-Hosted Runner (เครื่องเรา เอง)
+
+ข้อดี: ต่อฐานข้อมูลในเครื่องตัวเอง (localhost) ได้ทันที, รันไวมากเพราะไม่ต้องโหลด node_modules ใหม่ทุกรอบ, ฟรีไม่จำกัดนาที
+
+ข้อเสีย: คอมพิวเตอร์เราทำงานหนักขึ้น, ถ้าเราปิดเครื่องหรือเน็ตหลุด Pipeline จะรันไม่ได้ทันที, อาจมีไฟล์ขยะตกค้างจากการเทสรอบก่อน
+
+ubuntu-latest (คลาวด์ของ GitHub)
+
+ข้อดี: ไม่กินแรงเครื่องเรา, สตาร์ทจากเครื่องใหม่ที่สะอาดเสมอลดปัญหาไฟล์ค้าง, ปลอดภัยสูงแยกส่วนชัดเจน
+
+ข้อเสีย: มองไม่เห็น localhost ในเครื่องเรา (ทำให้รันเทสไม่ผ่าน), เสียเวลาดาวน์โหลดแพ็กเกจใหม่ตั้งแต่ศูนย์ทุกรอบ, มีโควตานาทีจำกัดต่อเดือน
 
 ```
 
@@ -1503,10 +1585,7 @@ git push origin main
 
 **แนบรูป GitHub Actions Workflow ที่ผ่านทั้งหมด**:
 
-```plaintext
-# แนบ screenshot ที่นี่
-
-```
+![alt text](image1.png)
 
 ---
 
@@ -1749,9 +1828,45 @@ curl -I $BACKEND/api/rooms
 **บันทึกผลการทดสอบบน Production**:
 
 ```plaintext
-# วาง output ที่นี่
+export BACKEND=https://booking-backend-c5l7.onrender.com
 
+curl $BACKEND/api/rooms
+[{"id":2,"roomType":"deluxe","name":"ห้องดีลักซ์","description":"พื้นที่กว้างขึ้น เหมาะสำหรับ 2-3 ท่าน","capacity":3,"price":1800,"createdAt":"2026-05-22T12:41:13.415Z"},{"id":1,"roomType":"standard","name":"ห้องมาตรฐาน","description":"ห้องพักสำหรับ 1-2 ท่าน พร้อมสิ่งอำนวยความสะดวกพื้นฐาน","capacity":2,"price":1200,"createdAt":"2026-05-22T12:41:13.411Z"},{"id":3,"roomType":"suite","name":"ห้องสวีท","description":"ห้องพักขนาดใหญ่สำหรับครอบครัวหรือกลุ่ม","capacity":4,"price":2500,"createdAt":"2026-05-22T12:41:13.417Z"}]
+
+curl -s -X POST $BACKEND/api/login \
+  -H "Content-Type: application/json" \
+  -d '{"username":"admin","password":"admin123"}'
+{"token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJhZG1pbiIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc3OTQ1NTU3OCwiZXhwIjoxNzc5NDU5MTc4fQ.o5zhzUut5HgkcMHusIWjAxvLdZGikhCJNt0IWy0C1ds","user":{"id":1,"username":"admin","role":"admin"}}
+
+export TOKEN="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJhZG1pbiIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc3OTQ1NTU3OCwiZXhwIjoxNzc5NDU5MTc4fQ.o5zhzUut5HgkcMHusIWjAxvLdZGikhCJNt0IWy0C1ds"
+
+curl $BACKEND/api/bookings   -H "Authorization: Bearer $TOKEN"
+[{"id":1,"fullname":"ณัฏฐวรรณ ช่างเก็บ","email":"68030085@kmitl.ac.th","phone":"0984700509","checkin":"2026-07-01T00:00:00.000Z","checkout":"2026-07-05T00:00:00.000Z","roomtype":"deluxe","guests":3,"status":"pending","comment":null,"roomId":2,"createdAt":"2026-05-22T13:14:48.979Z","room":{"id":2,"roomType":"deluxe","name":"ห้องดีลักซ์","description":"พื้นที่กว้างขึ้น เหมาะสำหรับ 2-3 ท่าน","capacity":3,"price":1800,"createdAt":"2026-05-22T12:41:13.415Z"}}]
+
+curl $BACKEND/api/reports \
+  -H "Authorization: Bearer $TOKEN"
+{"bookings":[{"id":1,"fullname":"ณัฏฐวรรณ ช่างเก็บ","email":"68030085@kmitl.ac.th","phone":"0984700509","checkin":"2026-07-01T00:00:00.000Z","checkout":"2026-07-05T00:00:00.000Z","roomtype":"deluxe","guests":3,"status":"pending","comment":null,"roomId":2,"createdAt":"2026-05-22T13:14:48.979Z","room":{"id":2,"roomType":"deluxe","name":"ห้องดีลักซ์","description":"พื้นที่กว้างขึ้น เหมาะสำหรับ 2-3 ท่าน","capacity":3,"price":1800,"createdAt":"2026-05-22T12:41:13.415Z"}}],"summaryByRoom":{"ห้องดีลักซ์":1},"summaryByStatus":{"pending":1},"totalNights":4,"totalBookings":1}
+
+curl -I $BACKEND/api/rooms
+HTTP/1.1 200 OK
+Date: Fri, 22 May 2026 13:17:44 GMT
+Content-Type: application/json; charset=utf-8
+Connection: keep-alive
+access-control-allow-origin: *
+etag: W/"32f-21KqDFhkwJI194XksA9bh+zg/5k"
+rndr-id: 4774e0d8-871d-4bfd
+Server: cloudflare
+vary: Accept-Encoding
+x-powered-by: Express
+x-render-origin-server: Render
+cf-cache-status: DYNAMIC
+CF-RAY: 9ffc1a4f3e07d338-BKK
+alt-svc: h3=":443"; ma=86400
 ```
+![alt text](image2.png)
+![alt text](image3.png)
+![alt text](image4.png)
+![alt text](image5.png)
 
 ### ขั้นตอนที่ 9.6: ทดสอบ Auto-Deployment (สำคัญ)
 
@@ -2312,7 +2427,96 @@ done
 **คำถาม 10.3**: หลังจากตั้งค่า Helmet แล้ว ให้รัน `curl -I http://localhost:3001/api/rooms` และบันทึก headers ที่ได้ อธิบายว่า header แต่ละตัวป้องกันการโจมตีแบบใด
 
 ```plaintext
-# บันทึก headers และคำอธิบายที่นี่
+ curl -I http://localhost:3001/api/rooms
+HTTP/1.1 200 OK
+Content-Security-Policy: default-src 'self';script-src 'self';style-src 'self' 'unsafe-inline';img-src 'self' data: https:;base-uri 'self';font-src 'self' https: data:;form-action 'self';frame-ancestors 'self';object-src 'none';script-src-attr 'none';upgrade-insecure-requests
+Cross-Origin-Opener-Policy: same-origin
+Cross-Origin-Resource-Policy: same-origin
+Origin-Agent-Cluster: ?1
+Referrer-Policy: no-referrer
+Strict-Transport-Security: max-age=31536000; includeSubDomains
+X-Content-Type-Options: nosniff
+X-DNS-Prefetch-Control: off
+X-Download-Options: noopen
+X-Frame-Options: DENY
+X-Permitted-Cross-Domain-Policies: none
+X-XSS-Protection: 0
+Vary: Origin
+Content-Type: application/json; charset=utf-8
+Content-Length: 815
+ETag: W/"32f-+hkzSP0Tv0+EYw/GoMHrTUY1nRE"
+Date: Mon, 25 May 2026 13:20:53 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+1. Security Headers หลัก (ป้องกัน XSS, Clickjacking และการหลอกลวง)
+Content-Security-Policy (CSP) =>
+
+ป้องกัน: XSS (Cross-Site Scripting) และการแอบรันโค้ดแปลกปลอม (Data Injection)
+
+การทำงาน: กำหนดให้เบราว์เซอร์ดาวน์โหลดและรัน Script, Style หรือรูปภาพ เฉพาะจากแหล่งที่ระบุว่าปลอดภัยเท่านั้น (ในโค้ดคือกำหนดเน้นแค่ตัวเว็บเอง 'self')
+
+X-Frame-Options: DENY =>
+
+ป้องกัน: Clickjacking (การสร้างเว็บโปร่งใสซ้อนทับเพื่อหลอกให้ผู้ใช้กดปุ่มสำคัญ)
+
+การทำงาน: สั่งห้ามไม่ให้เว็บไซต์อื่นนำหน้าเว็บของเราไปใส่ไว้ในแท็ก <frame>, <iframe> หรือ <embed> เด็ดขาด
+
+Strict-Transport-Security (HSTS) =>
+
+ป้องกัน: Man-in-the-Middle (MitM) และการดักฟังข้อมูล (Eavesdropping)
+
+การทำงาน: บังคับให้เบราว์เซอร์เชื่อมต่อกับเว็บนี้ผ่านโปรโตคอล HTTPS (เข้ารหัส) ที่ปลอดภัยเท่านั้น เป็นเวลา 1 ปี (max-age=31536000) ป้องกันการแอบเปลี่ยนเป็น HTTP ธรรมดา
+
+X-Content-Type-Options: nosniff =>
+
+ป้องกัน: MIME-type Sniffing (การปลอมแปลงไฟล์ เช่น อัปโหลดไฟล์ไวรัสที่ปลอมเป็นรูปภาพ เพื่อหลอกให้เซิร์ฟเวอร์หรือเบราว์เซอร์รันโค้ดอันตราย)
+
+การทำงาน: บังคับให้เบราว์เซอร์เชื่อมั่นตามค่า Content-Type ที่เซิร์ฟเวอร์ส่งมาเท่านั้น (ห้ามเดาประเภทไฟล์เอง)
+
+2. Cross-Origin Headers (ควบคุมการแชร์ข้อมูลข้ามเว็บไซต์)
+Cross-Origin-Opener-Policy (COOP): same-origin =>
+
+ป้องกัน: Spectre Attacks และการโจมตีช่องโหว่ระดับสถาปัตยกรรม CPU (Cross-Window Attacks)
+
+การทำงาน: ตัดกระบวนการทำงาน (Process) ของหน้าต่างที่เปิดขึ้นมาใหม่ ออกจากหน้าต่างหลัก เพื่อไม่ให้หน้าเว็บอื่นที่เปิดขึ้นมาแอบอ่านความจำในระบบได้
+
+Cross-Origin-Resource-Policy (CORP): same-origin =>
+
+ป้องกัน: Spectre และการแอบดึงข้อมูลภายใน (Cross-Origin Data Leakage)
+
+การทำงาน: อนุญาตให้โหลด Resource (เช่น รูปภาพ, สคริปต์) ได้เฉพาะจากเว็บไซต์ต้นทางเดียวกันเท่านั้น เว็บอื่นแอบดึงไปใช้ไม่ได้
+
+3. Headers เสริมเพื่อความเป็นส่วนตัวและสิทธิ์การใช้งาน
+Referrer-Policy: no-referrer =>
+
+ป้องกัน: Information Leakage (ข้อมูลสำคัญรั่วไหลผ่าน URL)
+
+การทำงาน: ไม่ส่งข้อมูล URL ต้นทาง (Referrer) ติดไปกับ Header เมื่อผู้ใช้กดลิงก์ย้ายไปเว็บอื่น ป้องกันไม่ให้เว็บปลายทางรู้ว่าผู้ใช้มาจากหน้าไหนหรือติด Token อะไรมาบน URL
+
+X-DNS-Prefetch-Control: off =>
+
+ป้องกัน: การสอดแนมความเป็นส่วนตัวของผู้ใช้ (Privacy Leak)
+
+การทำงาน: ปิดการเดาและค้นหาข้อมูล DNS ล่วงหน้าของลิงก์ต่าง ๆ บนหน้าเว็บ เพื่อป้องกันไม่ให้แฮกเกอร์แกะรอยพฤติกรรมการคลิกลิงก์ของผู้ใช้ได้
+
+X-Download-Options: noopen =>
+
+ป้องกัน: การรันโค้ดอันตรายผ่านทางเบราว์เซอร์เก่า (สำหรับ Internet Explorer)
+
+การทำงาน: บังคับให้ผู้ใช้ต้อง "ดาวน์โหลดและเซฟไฟล์ลงเครื่องก่อน" แทนการกด "เปิดไฟล์ทันทีจากเบราว์เซอร์" ซึ่งอาจทำให้สคริปต์ร้ายที่แฝงมาทำงานในบริบทของเว็บเราได้
+
+X-Permitted-Cross-Domain-Policies: none =>
+
+ป้องกัน: ช่องโหว่จากการดึงข้อมูลข้ามโดเมนของปลั๊กอินเก่า (Flash / Adobe Reader)
+
+การทำงาน: สั่งห้ามไม่ให้โปรแกรม Flash หรือ Adobe Reader แอบเข้าถึงข้อมูลของเว็บนี้
+
+X-XSS-Protection: 0 =>
+
+ป้องกัน: บั๊กตัวกรอง XSS เก่าของเบราว์เซอร์ที่ทำให้เกิดช่องโหว่ใหม่
+
+การทำงาน: ปิดระบบ XSS Filter แบบเก่าของเบราว์เซอร์ เพราะปัจจุบันเราใช้ระบบ Content-Security-Policy (CSP) ที่ปลอดภัยและทันสมัยกว่ามากทดแทนแล้ว
 
 ```
 
@@ -2503,7 +2707,9 @@ options: >-
 อธิบายความแตกต่างระหว่าง Continuous Integration (CI) และ Continuous Deployment (CD) พร้อมยกตัวอย่างจาก workflow ที่สร้างในการทดลองนี้
 
 ```plaintext
-# ตอบที่นี่
+CI (Continuous Integration): ตรวจคุณภาพโค้ด + รันเทสอัตโนมัติทุกครั้งที่อัปเดต (เช่น npm test, npm audit บน GitHub) เพื่อไม่ให้โค้ดพัง
+
+CD (Continuous Deployment): นำโค้ดที่ผ่านการเทสแล้วไปขึ้นเซิร์ฟเวอร์จริง (Deploy ไป Vercel/Render) ให้ผู้ใช้ใช้งานทันทีอัตโนมัติ
 
 ```
 
@@ -2511,7 +2717,9 @@ options: >-
 ในโปรเจกต์นี้ Frontend และ Backend ถูก deploy แยกกัน (Vercel vs Render) มีข้อดีและข้อเสียอะไรเมื่อเทียบกับการ deploy บน server เดียวกัน?
 
 ```plaintext
-# ตอบที่นี่
+ข้อดี: แยกกันโต (Scale ง่าย), หน้าบ้านโหลดไวผ่าน CDN, ระบบไม่แย่งทรัพยากรกัน, อัปเดตแยกฝั่งได้โดยไม่ต้องปิดระบบทั้งหมด
+
+ข้อเสีย: ตั้งค่ายากขึ้น (ต้องคุม CORS และลิงก์ URL ข้ามเซิร์ฟเวอร์) และมีความดีเลย์ (Latency) ในการส่งข้อมูลข้ามเครือข่ายเล็กน้อย
 
 ```
 
@@ -2519,7 +2727,11 @@ options: >-
 Newman CI tests ต่างจาก Post-Deploy Smoke Tests อย่างไร? ทำไมถึงต้องมีทั้งสองแบบ? ยกตัวอย่างสถานการณ์ที่ CI tests ผ่านแต่ Smoke Tests ล้มเหลวได้หรือไม่?
 
 ```plaintext
-# ตอบที่นี่
+Newman CI: เทส Logic และความถูกต้องของ API บนระบบจำลองก่อนจะยอมให้ Deploy
+
+Post-Deploy Smoke Tests: เทสฟังก์ชันหลักบนเซิร์ฟเวอร์จริงหลัง Deploy เสร็จ เพื่อเช็กว่าระบบเปิดขึ้นไหม ไม่ล่ม ไม่ค้าง
+
+สถานการณ์ที่ CI ผ่านแต่ Smoke พัง: โค้ดเขียนมาถูกหมด (CI เลยผ่าน) แต่พอย้ายไปเซิร์ฟเวอร์จริง ลืมตั้งค่าลืมใส่ DATABASE_URL ใน Render ทำให้เซิร์ฟเวอร์ค้าง รันไม่ขึ้น (Smoke เลยพัง)
 
 ```
 
@@ -2537,15 +2749,28 @@ Newman CI tests ต่างจาก Post-Deploy Smoke Tests อย่างไ
 | CI Pipeline | OWASP Dep-Check | ? |
 
 ```plaintext
-# ตอบที่นี่
+Helmet.js: ป้องกันการแอบฝังโค้ดและแอบดึงหน้าเว็บไปหลอกลวง (XSS, Clickjacking) โดยคุม HTTP Headers
 
+express-rate-limit: ป้องกันการรัวยิงระบบหรือเดารหัสผ่านซ้ำ ๆ (DDoS, Brute-Force) โดยจำกัดจำนวน Request ต่อ IP
+
+CORS: ป้องกันเว็บไซต์อื่นแอบมายิงดึงข้อมูลจากหลังบ้านเรา (ดักได้เฉพาะโดเมนที่อนุญาต)
+
+bcryptjs: ป้องกันรหัสผ่านหลุด โดยทำการเข้ารหัสลับแบบย้อนกลับไม่ได้ (One-way Hashing)
+
+npm audit: ตรวจสอบช่องโหว่ความปลอดภัยของคลังโค้ด (Packages) ที่เราดึงมาใช้
+
+TruffleHog: ตรวจหาและป้องกันการเผลอเขียนรหัสผ่านหรือ API Key ทิ้งไว้ในโค้ดแล้วดันขึ้น GitHub
+
+OWASP Dep-Check: สแกนหาช่องโหว่ร้ายแรงของเครื่องมือที่เราใช้ตามมาตรฐานสากล
 ```
 
 **คำถาม 5 — Secrets Management**:
 เหตุใดจึงต้องใช้ GitHub Secrets แทนการเขียนค่า credentials โดยตรงใน workflow YAML file? ถ้าใส่ค่า JWT_SECRET ตรงๆ ใน YAML จะเกิดอะไรขึ้น?
 
 ```plaintext
-# ตอบที่นี่
+เหตุผล: เพื่อความปลอดภัย GitHub Secrets จะซ่อนและเข้ารหัสค่าความลับไว้ ไม่ให้คนนอกทีมหรือผู้ไม่หวังดีเปิดดูได้จากโค้ด
+
+ถ้าใส่ตรงๆ ใน YAML: ค่าความลับจะหลุด (Credential Leak) ผู้ไม่หวังดีสามารถก๊อปปี้ JWT_SECRET ไปสร้าง Token ปลอมเพื่อปลอมตัวเป็น Admin เข้ามาควบคุมหรือลบฐานข้อมูลเราได้ทันที
 
 ```
 
@@ -2553,7 +2778,9 @@ Newman CI tests ต่างจาก Post-Deploy Smoke Tests อย่างไ
 อธิบาย Git Flow ที่ใช้ในโปรเจกต์นี้ (develop → staging → main) ทำไมต้องมีหลาย environment แทนที่จะ deploy ตรงจาก develop ไป production เลย?
 
 ```plaintext
-# ตอบที่นี่
+Git Flow: develop (เขียนโค้ด/ทดสอบรวม) ➡️ staging (จำลองเหมือนจริงเพื่อให้ QA ตรวจ) ➡️ main (เปิดให้ลูกค้าใช้งานจริง)
+
+ทำไมต้องแยก: เพื่อลดความเสี่ยง ป้องกันบั๊กหลุดไปถึงผู้ใช้ และป้องกันนักพัฒนาเผลอไปกดลบหรือแก้ไขข้อมูลของลูกค้าจริงในระหว่างการทดลองโค้ด
 
 ```
 
