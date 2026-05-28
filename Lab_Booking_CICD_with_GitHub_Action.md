@@ -1385,8 +1385,8 @@ jobs:
 
    | Key | Value | Environment |
    |---|---|---|
-   | `VITE_API_URL` | `https://your-backend.onrender.com` | Production |
-   | `VITE_API_URL` | `https://your-qa-backend.onrender.com` | Preview |
+   | `VITE_Front_URL` | `https://your-frontend.onvercel.com` | Production |
+   
 
 3. **รับ Vercel Token สำหรับ GitHub Actions**:
    - ไปที่ Vercel → Account Settings → **Tokens**
