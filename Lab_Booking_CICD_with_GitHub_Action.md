@@ -249,13 +249,13 @@ RUN chmod +x ./docker-entrypoint.sh
 
 ### Checklist ก่อนเริ่มส่วนที่ 1
 
-- [ ] ติดตั้ง Git for Windows สำเร็จ
-- [ ] `git config --global core.autocrlf` แสดงค่า `false`
-- [ ] VS Code ตั้งค่า `files.eol: "\n"` แล้ว
-- [ ] VS Code ใช้ Git Bash เป็น default terminal
-- [ ] มุมขวาล่าง VS Code แสดง `LF` (ไม่ใช่ `CRLF`)
-- [ ] สร้างและ commit `.gitattributes` แล้ว (ทำหลัง Clone ในส่วนที่ 1.2)
-- [ ] เพิ่ม `sed -i 's/\r$//'` ใน `Dockerfile` แล้ว
+- [✅] ติดตั้ง Git for Windows สำเร็จ
+- [✅] `git config --global core.autocrlf` แสดงค่า `false`
+- [✅] VS Code ตั้งค่า `files.eol: "\n"` แล้ว
+- [✅] VS Code ใช้ Git Bash เป็น default terminal
+- [✅] มุมขวาล่าง VS Code แสดง `LF` (ไม่ใช่ `CRLF`)
+- [✅] สร้างและ commit `.gitattributes` แล้ว (ทำหลัง Clone ในส่วนที่ 1.2)
+- [✅] เพิ่ม `sed -i 's/\r$//'` ใน `Dockerfile` แล้ว
 
 ---
 
@@ -440,7 +440,7 @@ model Booking {
 **คำถาม 2.1**: จาก schema นี้ ความสัมพันธ์ระหว่าง `Room` และ `Booking` เป็นแบบใด (one-to-one / one-to-many / many-to-many)? อธิบายเหตุผล
 
 ```plaintext
-# ตอบคำถามที่นี่
+ความสัมพันธ์ระหว่าง `Room` และ `Booking` เป็นแบบ one-to-many เพราะ 1ห้องสามารถมีการจองได้หลายครั้ง แต่ในการจองแต่ละครั้งสามารถจองได้เพียง1ห้อง
 
 ```
 
@@ -642,9 +642,9 @@ curl http://localhost:3001/api/reports \
 **บันทึกผลการทดสอบ**:
 
 ```plaintext
-# วาง output จาก curl ที่นี่
-
-
+$ curl http://localhost:3001/api/reports \
+  -H "Authorization: Bearer $TOKEN"
+{"bookings":[{"id":2,"fullname":"Wanitcha Jabprang","email":"68030251@kmitl.ac.th","phone":"0808301965","checkin":"2025-08-01T00:00:00.000Z","checkout":"2025-08-04T00:00:00.000Z","roomtype":"standard","guests":2,"status":"pending","comment":null,"roomId":1,"createdAt":"2026-05-07T08:24:00.635Z","room":{"id":1,"roomType":"standard","name":"ห้องมาตรฐาน","description":"ห้องพักสำหรับ 1-2 ท่าน พร้อมสิ่งอำนวยความสะดวกพื้นฐาน","capacity":2,"price":1200,"createdAt":"2026-05-07T07:49:29.721Z"}},{"id":1,"fullname":"ǳԪ�� �Ѻ����","email":"68030251@kmitl.ac.th","phone":"0808301965","checkin":"2025-08-01T00:00:00.000Z","checkout":"2025-08-04T00:00:00.000Z","roomtype":"standard","guests":2,"status":"pending","comment":null,"roomId":1,"createdAt":"2026-05-07T08:23:37.462Z","room":{"id":1,"roomType":"standard","name":"ห้องมาตรฐาน","description":"ห้องพักสำหรับ 1-2 ท่าน พร้อมสิ่งอำนวยความสะดวกพื้นฐาน","capacity":2,"price":1200,"createdAt":"2026-05-07T07:49:29.721Z"}}],"summaryByRoom":{"ห้องมาตรฐาน":2},"summaryByStatus":{"pending":2},"totalNights":6,"totalBookings":2}
 
 ```
 
@@ -961,15 +961,51 @@ start newman-report.html       # Windows (Git Bash)
 
 **แนบรูปผลการทดสอบ Newman**:
 
-```plaintext
-# แนบ screenshot ผลการทดสอบที่นี่
+![newman-report](image1.png)
 
-```
 
 **คำถาม 4.3**: Newman tests ที่เขียนมีการทดสอบทั้ง positive cases (สำเร็จ) และ negative cases (ล้มเหลว) อธิบายให้ครบอย่างน้อย 2 ตัวอย่าง
 
-```plaintext
-# ตอบคำถามที่นี่
+```markdown
+## Positive Test Cases (กรณีทดสอบสำเร็จ)
+# Login
+ส่งคำขอ POST /api/login
+ใช้ username/password ที่ถูกต้อง
+ระบบตอบกลับ 200 OK
+มีการตรวจสอบว่าได้รับ JWT Token กลับมา
+ผลลัพธ์:
+Status is 200
+Returns JWT token
+คือยืนยันว่าระบบล็อกอินทำงานถูกต้อง
+ผู้ใช้ที่มีข้อมูลถูกต้องสามารถเข้าสู่ระบบได้
+
+# Create Booking
+ส่งคำขอ POST /api/bookings
+กรอกข้อมูลการจองถูกต้องครบถ้วน
+ระบบตอบกลับ 201 Created
+ตรวจสอบว่ามี Booking ID ถูกสร้างขึ้น
+ผลลัพธ์:
+Status is 201
+Booking has id
+คือ ยืนยันว่าระบบสามารถสร้างรายการจองใหม่ได้จริง
+Database สามารถบันทึกข้อมูลได้สำเร็จ
+
+## Negative Test Cases (กรณีทดสอบล้มเหลว)
+# Login
+ส่งคำขอ POST /api/login
+ใช้รหัสผ่านไม่ถูกต้อง
+ระบบตอบกลับ 401 Unauthorized
+ผลลัพธ์:Status is 401
+คือ ระบบสามารถป้องกันการเข้าสู่ระบบด้วยข้อมูลผิดพลาดได้
+เป็นการทดสอบด้าน Security และ Authentication
+
+# Export Reports
+ส่งคำขอ GET /api/reports/export
+ไม่ส่ง Token สำหรับยืนยันตัวตน
+ระบบตอบกลับ 401 Unauthorized
+ผลลัพธ์:Status is 401 without token
+คือ ระบบป้องกันผู้ใช้ที่ไม่ได้รับสิทธิ์ไม่ให้เข้าถึงรายงาน
+ยืนยันว่า Authorization Middleware ทำงานถูกต้อง
 
 ```
 
@@ -995,7 +1031,9 @@ Workflow ที่มีอยู่ใช้ self-hosted runner และทำ
 **คำถาม 5.1**: ทำไม workflow ปัจจุบันถึงใช้ `self-hosted` runner? มีข้อดีข้อเสียอะไรเมื่อเทียบกับ `ubuntu-latest`?
 
 ```plaintext
-# ตอบคำถามที่นี่
+# การใช้ self-hosted runner เป็นการเลือกให้ workflow ทำงานบนเครื่องหรือเซิร์ฟเวอร์ที่ผู้พัฒนาดูแลเอง แทนที่จะใช้ runner มาตรฐานอย่าง ubuntu-latest โดยสาเหตุที่หลายโปรเจกต์เลือกใช้ self-hosted มักเกิดจากความต้องการด้าน environment และทรัพยากรที่เฉพาะเจาะจงมากกว่า runner มาตรฐานสามารถรองรับได้ เช่น ต้องใช้ dependency พิเศษ ต้องเชื่อมต่อกับฐานข้อมูลภายในองค์กร หรือจำเป็นต้องใช้เครื่องที่มีประสิทธิภาพสูงในการ build และทดสอบระบบ
+
+ข้อดีสำคัญของ self-hosted คือสามารถควบคุมสภาพแวดล้อมในการทำงานได้ทั้งหมด ผู้พัฒนาสามารถติดตั้งโปรแกรม เครื่องมือ หรือ service ต่าง ๆ ค้างไว้บนเครื่องได้ ทำให้ไม่ต้องติดตั้งใหม่ทุกครั้งที่ workflow เริ่มทำงาน ส่งผลให้การ build หรือการทดสอบบางประเภททำงานได้รวดเร็วกว่าการใช้ ubuntu-latest นอกจากนี้ยังสามารถเข้าถึง network ภายในหรือระบบที่ไม่เปิดสู่สาธารณะได้ง่ายกว่า เช่น database ภายในบริษัทหรือ private registry ซึ่งเป็นสิ่งที่ GitHub-hosted runner ทำได้ค่อนข้างจำกัด
 
 ```
 
@@ -1503,10 +1541,10 @@ git push origin main
 
 **แนบรูป GitHub Actions Workflow ที่ผ่านทั้งหมด**:
 
-```plaintext
-# แนบ screenshot ที่นี่
 
-```
+![รูป GitHub Actions Workflow ที่ผ่านทั้งหมด](image2.png)
+
+
 
 ---
 
@@ -1710,10 +1748,10 @@ Deployment สำเร็จ
 **ทดสอบ Frontend (Vercel)**:
 
 เปิด browser ไปที่ Vercel URL ของคุณ ทดสอบ:
-- [ ] หน้าแสดงรายการห้องพัก
-- [ ] ฟอร์มการจองทำงาน
-- [ ] หน้า Admin login ทำงาน
-- [ ] Dashboard Admin แสดงข้อมูลถูกต้อง
+- [✅] หน้าแสดงรายการห้องพัก
+- [✅] ฟอร์มการจองทำงาน
+- [✅] หน้า Admin login ทำงาน
+- [✅] Dashboard Admin แสดงข้อมูลถูกต้อง
 
 **ทดสอบ Backend (Render) ด้วย curl**:
 
@@ -1748,10 +1786,15 @@ curl -I $BACKEND/api/rooms
 
 **บันทึกผลการทดสอบบน Production**:
 
-```plaintext
-# วาง output ที่นี่
+### FRONTEND
+![ผลการทดสอบบน Production_FRONTEND1](image3.png)
+![ผลการทดสอบบน Production_FRONTEND2](image4.png)
+![ผลการทดสอบบน Production_FRONTEND3](image5.png)
+![ผลการทดสอบบน Production_FRONTEND4](image6.png)
 
-```
+### BACKEND
+![ผลการทดสอบบน Production_BACKEND1](image7.png)
+![ผลการทดสอบบน Production_BACKEND2](image8.png)
 
 ### ขั้นตอนที่ 9.6: ทดสอบ Auto-Deployment (สำคัญ)
 
@@ -2311,8 +2354,47 @@ done
 
 **คำถาม 10.3**: หลังจากตั้งค่า Helmet แล้ว ให้รัน `curl -I http://localhost:3001/api/rooms` และบันทึก headers ที่ได้ อธิบายว่า header แต่ละตัวป้องกันการโจมตีแบบใด
 
+![headers](image.png)
 ```plaintext
-# บันทึก headers และคำอธิบายที่นี่
+1. Content-Security-Policy (CSP)
+การป้องกัน: Cross-Site Scripting (XSS) และ Data Injection
+
+มันทำงานอย่างไร: CSP ทำหน้าที่ระบุว่าเบราว์เซอร์ได้รับอนุญาตให้โหลดข้อมูลหรือรันสคริปต์จากแหล่งใดได้บ้าง จากภาพจะเห็นกฎเช่น default-src 'self' ซึ่งหมายความว่าเบราว์เซอร์จะยอมรันสคริปต์ที่มาจากโดเมนของเซิร์ฟเวอร์เราเองเท่านั้น หากแฮกเกอร์แอบฝังโค้ด JavaScript อันตรายจากเว็บภายนอกเข้ามา เบราว์เซอร์จะบล็อกไม่ให้ทำงานทันที
+
+2. X-Frame-Options: SAMEORIGIN
+การป้องกัน: Clickjacking (การหลอกให้คลิกปุ่มซ่อนเร้น)
+
+มันทำงานอย่างไร: สั่งห้ามไม่ให้เว็บไซต์อื่นนำหน้าเว็บของเราไปฝังไว้ในหน้าต่างซ่อนเร้นผ่านแท็ก <iframe> ค่า SAMEORIGIN จะอนุญาตให้เปิดภายในเฟรมของโดเมนเดียวกันได้เท่านั้น แฮกเกอร์จึงไม่สามารถสร้างเว็บปลอมมาครอบทับหน้าเว็บของเราเพื่อหลอกล่อให้ผู้ใช้กดปุ่มสำคัญได้
+
+3. Strict-Transport-Security (HSTS)
+การป้องกัน: Man-in-the-Middle (MitM) และ Protocol Downgrade Attacks
+
+มันทำงานอย่างไร: บังคับให้ตัวเบราว์เซอร์ต้องติดต่อสื่อสารกับเซิร์ฟเวอร์ผ่านโปรโตคอลที่มีการเข้ารหัสความปลอดภัยสูงอย่าง HTTPS เท่านั้น (ตามเวลา max-age ที่กำหนด) แม้ผู้ใช้เผลอพิมพ์ http:// ธรรมดา เบราว์เซอร์จะบังคับเปลี่ยนเป็น https:// ให้เองก่อนส่งข้อมูลออกไป ทำให้ผู้ร้ายไม่สามารถดักฟังข้อมูลกลางทางได้
+
+4. X-Content-Type-Options: nosniff
+การป้องกัน: MIME Sniffing (Drive-by Downloads)
+
+มันทำงานอย่างไร: บังคับให้เบราว์เซอร์ปฏิบัติตามชนิดไฟล์ที่เซิร์ฟเวอร์กำหนดใน Content-Type อย่างเคร่งครัด ป้องกันไม่ให้เบราว์เซอร์พยายามเดาประเภทไฟล์เอง เช่น แฮกเกอร์อัปโหลดไฟล์ข้อความธรรมดาแต่แอบซ่อนโค้ดอันตรายไว้ข้างใน หากไม่มีตัวนี้ เบราว์เซอร์บางรุ่นอาจเดาว่ามันคือสคริปต์แล้วสั่งรันจนระบบติดไวรัสได้
+
+5. Referrer-Policy: no-referrer
+การป้องกัน: Information Leakage (ข้อมูล URL และ Token ความลับรั่วไหล)
+
+มันทำงานอย่างไร: เมื่อผู้ใช้คลิกคำสั่งหรือลิงก์จากเว็บเราข้ามไปยังเว็บไซต์อื่น เบราว์เซอร์จะไม่ส่งที่อยู่ URL ล่าสุด (Referrer) ติดตามไปด้วย ป้องกันไม่ให้เว็บปลายทางล่วงรู้พฤติกรรม หรือแอบเก็บข้อมูลสำคัญที่อาจจะติดอยู่บนตัวแปร Query String ของ URL
+
+6. X-DNS-Prefetch-Control: off
+การป้องกัน: User Privacy Leakage (การละเมิดความเป็นส่วนตัว)
+
+มันทำงานอย่างไร: สั่งปิด (off) ไม่ให้เบราว์เซอร์แอบทำการแปลงชื่อโดเมน (DNS Resolution) ของลิงก์ต่าง ๆ บนหน้าเว็บล่วงหน้าก่อนที่ผู้ใช้จะกด เพื่อลดความเสี่ยงที่แฮกเกอร์จะดักตรวจจับพฤติกรรมการท่องเว็บของตัวผู้ใช้งาน
+
+7. X-Permitted-Cross-Domain-Policies: none
+การป้องกัน: Cross-domain Data Requests จากแพลตฟอร์มอื่น
+
+มันทำงานอย่างไร: การตั้งเป็น none จะบอกให้โปรแกรมจำพวก Adobe Flash หรือโปรแกรมเปิดอ่านไฟล์ PDF ทราบว่า ไม่อนุญาต ให้แอบส่งคำสั่งข้ามโดเมนมาดึงข้อมูลใด ๆ จากเซิร์ฟเวอร์ตัวนี้ไปใช้งานได้ครับ
+
+8. Cross-Origin-Opener-Policy & Cross-Origin-Resource-Policy
+การป้องกัน: Spectre และ Side-Channel Attacks
+
+มันทำงานอย่างไร: สั่งให้เบราว์เซอร์แยก Process การประมวลผลของหน้าเว็บออกจากเว็บอื่น ๆ อย่างเด็ดขาด ป้องกันไม่ให้โค้ดอันตรายจากต่างโดเมนที่เปิดอยู่บนเบราว์เซอร์เดียวกัน แอบเข้ามาอ่านข้อมูลในหน่วยความจำ (Memory) ของแอปพลิเคชันเรา
 
 ```
 
@@ -2457,45 +2539,45 @@ options: >-
 ตรวจสอบว่าทำสำเร็จทุกข้อ:
 
 **การเตรียม Repository**:
-- [ ] Fork repository `booking-app-demo-2025` สำเร็จ
-- [ ] Clone และทำความเข้าใจโครงสร้างโปรเจกต์ทั้งหมด
-- [ ] อ่านและอธิบาย Prisma schema ได้
+- [✅] Fork repository `booking-app-demo-2025` สำเร็จ
+- [✅] Clone และทำความเข้าใจโครงสร้างโปรเจกต์ทั้งหมด
+- [✅] อ่านและอธิบาย Prisma schema ได้
 
 **Local Development**:
-- [ ] รัน PostgreSQL ด้วย Docker Compose สำเร็จ
-- [ ] รัน Prisma migrations สำเร็จ
-- [ ] Backend server ทำงานและ API endpoints ตอบสนองถูกต้อง
-- [ ] Frontend build สำเร็จและแสดงผลใน browser
+- [✅] รัน PostgreSQL ด้วย Docker Compose สำเร็จ
+- [✅] รัน Prisma migrations สำเร็จ
+- [✅] Backend server ทำงานและ API endpoints ตอบสนองถูกต้อง
+- [✅] Frontend build สำเร็จและแสดงผลใน browser
 
 **API Testing**:
-- [ ] สร้าง Postman Collection ที่ครอบคลุม endpoints หลัก
-- [ ] รัน Newman tests ในเครื่องผ่านทั้งหมด
-- [ ] ทดสอบทั้ง positive cases และ negative cases
+- [✅] สร้าง Postman Collection ที่ครอบคลุม endpoints หลัก
+- [✅] รัน Newman tests ในเครื่องผ่านทั้งหมด
+- [✅] ทดสอบทั้ง positive cases และ negative cases
 
 **Security**:
-- [ ] ติดตั้งและตั้งค่า Helmet.js ใน backend
-- [ ] ตั้งค่า Rate Limiting สำหรับ API และ Login endpoint
-- [ ] ตั้งค่า CORS อย่างถูกต้อง (ระบุ origin ชัดเจน)
-- [ ] รัน `npm audit` และไม่พบ high/critical vulnerability
-- [ ] Security Scanning Job ทำงานใน GitHub Actions
+- [✅] ติดตั้งและตั้งค่า Helmet.js ใน backend
+- [✅] ตั้งค่า Rate Limiting สำหรับ API และ Login endpoint
+- [✅] ตั้งค่า CORS อย่างถูกต้อง (ระบุ origin ชัดเจน)
+- [✅] รัน `npm audit` และไม่พบ high/critical vulnerability
+- [✅] Security Scanning Job ทำงานใน GitHub Actions
 
 **GitHub Actions**:
-- [ ] สร้าง workflow ไฟล์ `ci-cd.yml` ที่มีทั้ง CI, Security Scan, CD และ Post-Deploy Test
-- [ ] Workflow ทำงาน automatic เมื่อ push code
-- [ ] Newman tests รันใน CI สำเร็จ
-- [ ] Security scanning job ผ่าน
-- [ ] Post-Deploy Smoke Tests ผ่านบน Production
+- [✅] สร้าง workflow ไฟล์ `ci-cd.yml` ที่มีทั้ง CI, Security Scan, CD และ Post-Deploy Test
+- [✅] Workflow ทำงาน automatic เมื่อ push code
+- [✅] Newman tests รันใน CI สำเร็จ
+- [✅] Security scanning job ผ่าน
+- [✅] Post-Deploy Smoke Tests ผ่านบน Production
 
 **Cloud Deployment**:
-- [ ] ตั้งค่า Vercel และ deploy frontend สำเร็จ
-- [ ] ตั้งค่า Render และ deploy backend สำเร็จ
-- [ ] ตั้งค่า GitHub Secrets ครบทุกตัว
-- [ ] Smoke tests ผ่านหลัง deployment
-- [ ] ทดสอบ API บน production URL สำเร็จ
+- [✅] ตั้งค่า Vercel และ deploy frontend สำเร็จ
+- [✅] ตั้งค่า Render และ deploy backend สำเร็จ
+- [✅] ตั้งค่า GitHub Secrets ครบทุกตัว
+- [✅] Smoke tests ผ่านหลัง deployment
+- [✅] ทดสอบ API บน production URL สำเร็จ
 
 **Multi-Environment** (ข้อเพิ่มเติม):
-- [ ] สร้าง GitHub Environments (qa, staging, production)
-- [ ] สร้าง develop branch และ push เพื่อ trigger QA deployment
+- [✅] สร้าง GitHub Environments (qa, staging, production)
+- [✅] สร้าง develop branch และ push เพื่อ trigger QA deployment
 
 ### 12.2 คำถามทบทวน
 
@@ -2503,7 +2585,11 @@ options: >-
 อธิบายความแตกต่างระหว่าง Continuous Integration (CI) และ Continuous Deployment (CD) พร้อมยกตัวอย่างจาก workflow ที่สร้างในการทดลองนี้
 
 ```plaintext
-# ตอบที่นี่
+Continuous Integration (CI) และ Continuous Deployment (CD) เป็นกระบวนการที่ทำงานร่วมกันแต่มีบทบาทที่ต่างกันอย่างชัดเจน โดย CI จะเน้นไปที่การรวมโค้ดของนักพัฒนาเข้าสู่GitHub อย่างสม่ำเสมอ ซึ่งจะเน้นไปที่ระบบอัตโนมัติในการตรวจสอบความถูกต้องของโค้ด เช่น การรันคำสั่งเพื่อตรวจเช็ค Format โค้ด, การทำ Security Scan เพื่อหาช่องโหว่
+
+ในขณะที่ CD จะเป็นขั้นตอนที่รับไม้ต่อจาก CI เมื่อโค้ดผ่านการทดสอบทั้งหมดแล้ว โดย CD จะทำหน้าที่นำโค้ดนั้นไป Build และ Deploy ขึ้นสู่สภาพแวดล้อมที่ใช้งานจริง (Production) หรือสภาพแวดล้อมจำลอง (Staging) โดยอัตโนมัติโดยไม่ต้องอาศัยการกด Deploy มือ
+
+หากยกตัวอย่างจาก Workflow ในการทดลองนี้ เมื่อเราทำ Push หรือสร้าง Pull Request ไปยังBranchที่กำหนด ระบบ GitHub Actions จะเริ่มทำงานในฝั่ง CI ทันทีด้วยการติดตั้ง Dependencies, รัน TruffleHog ตรวจสอบข้อมูลความลับ, รัน npm audit, และรัน Newman เพื่อทดสอบ API หลังจากที่ขั้นตอน CI ทั้งหมดทำงานผ่านอย่างสมบูรณ์ ระบบจึงจะขยับเข้าสู่กระบวนการ CD ด้วยการส่งสัญญาณ (Trigger) หรืออัปเดตโค้ดไปยังแพลตฟอร์มปลายทางอย่าง Vercel สำหรับ Frontend และ Render สำหรับ Backend เพื่อทำการ Build และ Deploy ให้ผู้ใช้สามารถเข้าถึงเวอร์ชันล่าสุดได้ทันที
 
 ```
 
@@ -2511,7 +2597,9 @@ options: >-
 ในโปรเจกต์นี้ Frontend และ Backend ถูก deploy แยกกัน (Vercel vs Render) มีข้อดีและข้อเสียอะไรเมื่อเทียบกับการ deploy บน server เดียวกัน?
 
 ```plaintext
-# ตอบที่นี่
+การแยก Deploy ระหว่าง Frontend ไว้ที่ Vercel และ Backend ไว้ที่ Render เมื่อเทียบกับการมัดรวมทัั้งสองส่วนไว้บน Server เดียวกัน มีข้อดีและข้อเสียที่แตกต่างกันอย่างเห็นได้ชัด ในแง่ของข้อดี การแยก Server ช่วยให้ระบบมีความยืดหยุ่นในการขยายตัวสูงมาก เนื่องจากเราสามารถเลือกปรับสเปกเครื่องหรือ Scale เฉพาะฝั่ง Backend ที่ต้องประมวลผลหนักๆ ได้ โดยไม่ต้องเปลืองทรัพยากรไปกับฝั่ง Frontend ที่เน้นการเสิร์ฟไฟล์ Static นอกจากนี้ Vercel ยังมี Edge Network (CDN) ทั่วโลกทำให้โหลดหน้าเว็บได้เร็วมาก และที่สำคัญคือระบบมีความเป็นอิสระต่อกัน (Fault Isolation) หาก Server ของ Render ล่ม หน้าเว็บ Frontend บน Vercel ก็ยังคงเปิดใช้งานได้และสามารถแสดงหน้าต่างแจ้งเตือนข้อผิดพลาดที่สวยงามให้ผู้ใช้ทราบ แทนที่จะดับไปทั้งหมดพร้อมกัน
+
+อย่างไรก็ตาม ข้อเสีย ที่ตามมาคือความซับซ้อนในการจัดการและการตั้งค่าที่เพิ่มขึ้น นักพัฒนาจำเป็นต้องจัดการเรื่อง Cross-Origin Resource Sharing (CORS) เพื่อให้ Frontend และ Backend คุยกันได้, ต้องคอยดูแลเรื่องความปลอดภัยของ Network, มีค่าความหน่วงในการสื่อสารผ่านเครือข่ายอินเทอร์เน็ตระหว่างสองแพลตฟอร์ม และอาจมีค่าใช้จ่ายโดยรวมที่สูงกว่ารวมถึงความยุ่งยากในการจัดการ Environment Variables ที่แยกกันคนละที่ ซึ่งแตกต่างจาก Server เดียวกันที่ทุกอย่างเชื่อมต่อกันผ่าน Localhost ได้อย่างง่ายดายและรวดเร็ว
 
 ```
 
@@ -2519,8 +2607,12 @@ options: >-
 Newman CI tests ต่างจาก Post-Deploy Smoke Tests อย่างไร? ทำไมถึงต้องมีทั้งสองแบบ? ยกตัวอย่างสถานการณ์ที่ CI tests ผ่านแต่ Smoke Tests ล้มเหลวได้หรือไม่?
 
 ```plaintext
-# ตอบที่นี่
+Newman CI Tests จะรันในระหว่างกระบวนการ Integration ก่อนการ Deploy จริง (Pre-deployment) มุ่งเน้นไปที่การจำลองระบบขึ้นมาใน Environment ของ Runner (เช่น บน GitHub Actions) เพื่อทดสอบตรรกะของ API (Business Logic) ตรวจสอบความถูกต้องของ Response Status, โครงสร้าง JSON Data และการทำงานของ Function ต่างๆ อย่างละเอียด
 
+ในทางตรงกันข้าม Post-Deploy Smoke Tests จะรันทันทีหลังจากที่กระบวนการ Deploy บน Server ปลายทางเสร็จสิ้นลง เพื่อเป็นการตรวจสอบความพร้อมใช้งานขั้นพื้นฐานอย่างรวดเร็ว (Sanity Check) ว่าแอปพลิเคชันที่อยู่บน Server จริงสามารถเข้าถึงได้หรือไม่, Database เชื่อมต่อผ่านไหม, และ Network หรือ URL ปลายทางไม่ได้ส่ง Code 500 หรือ 404 ออกมา 
+
+ตัวอย่างสถานการณ์ที่ CI tests ผ่านแต่ Smoke Tests ล้มเหลว
+เช่น เมื่อโค้ดของเราไม่มีบั๊กในเชิงตรรกะเลยและผ่านการทดสอบบน GitHub Actions ทุกประการ แต่เมื่อโค้ดถูก Deploy ขึ้น Server จริงบน Render ปรากฏว่าเราลืมตั้งค่า Environment Variables ตัวสำคัญอย่าง DATABASE_URL หรือใส่รหัสผ่านฐานข้อมูลผิด ส่งผลให้ Server จริงไม่สามารถสตาร์ทอัพหรือเชื่อมต่อฐานข้อมูลได้ ทำให้ Smoke Tests ล้มเหลวในขณะที่ CI Tests ผ่านไปก่อนหน้านั้น
 ```
 
 **คำถาม 4 — Security Layers**:
@@ -2537,15 +2629,28 @@ Newman CI tests ต่างจาก Post-Deploy Smoke Tests อย่างไ
 | CI Pipeline | OWASP Dep-Check | ? |
 
 ```plaintext
-# ตอบที่นี่
+ชั้น Runtime เครื่องมือ Helmet.js ป้องกันการโจมตีผ่านช่องโหว่ของ HTTP Headers เช่น XSS (Cross-Site Scripting), Clickjacking, และการดักฟังข้อมูลโดยบังคับใช้ HTTPS รวมถึงซ่อนข้อมูลเทคโนโลยีของ Server (เช่น X-Powered-By) เพื่อไม่ให้ผู้โจมตีรู้ว่าเราใช้ Express
 
+ชั้น Runtime เครื่องมือ express-rate-limit ป้องกันการโจมตีแบบ Brute Force (การสุ่มเดารหัสผ่านซ้ำๆ) และการโจมตีแบบ Denial of Service (DoS) โดยการจำกัดจำนวนคำขอ (Requests) ที่มาจาก IP เดียวกันในช่วงเวลาที่กำหนด
+
+ชั้น Runtime เครื่องมือ CORS ป้องกันการเข้าถึง API จากเว็บไซต์ที่ไม่ได้รับอนุญาต (Unauthorized Cross-Origin Requests) เพื่อไม่ให้สคริปต์จากโดเมนแปลกปลอมแอบส่งคำขอมาดึงข้อมูลหรือกระทำการใดๆ บน Server ของเรา
+
+ชั้น Runtime เครื่องมือ bcryptjs ป้องกันการรั่วไหลของรหัสผ่านในกรณีที่ฐานข้อมูลถูกแฮก โดยการแปลงรหัสผ่านให้อยู่ในรูปของ Hash ที่มี Salt ผูกไว้ ทำให้ไม่สามารถย้อนกลับเป็นรหัสผ่านต้นฉบับได้ และป้องกันการใช้ Rainbow Table ในการถอดรหัส
+
+ชั้น CI Pipeline เครื่องมือ npm audit ป้องกันการใช้ Dependencies (Third-party Packages) ที่มีช่องโหว่ด้านความปลอดภัยที่ถูกรายงานไว้ในคลังข้อมูลสาธารณะ โดยจะแจ้งเตือนหรือบล็อกการรวมโค้ดหากพบแพ็กเกจที่เป็นอันตราย
+
+ชั้น CI Pipeline เครื่องมือ TruffleHog ป้องกันปัญหาข้อมูลความลับรั่วไหล (Secret Leakage) เช่น API Keys, Passwords, หรือ Tokens ที่นักพัฒนาอาจเผลอเขียนทิ้งไว้ใน Source Code (Hardcoded Secrets) แล้วเผลอ Push ขึ้นไปยัง GitHub
+
+ชั้น CI Pipeline เครื่องมือ OWASP Dep-Check ป้องกันความเสี่ยงจากการใช้งานโมดูลภายนอกที่มีช่องโหว่ที่เป็นที่รู้จัก (Known Vulnerabilities) โดยวิเคราะห์ลึกลงไปในระดับ Dependency Tree เพื่อค้นหาช่องโหว่ตามมาตรฐาน OWASP Top 10 ทำหน้าที่เสริมความแข็งแกร่งร่วมกับ npm audit
 ```
 
 **คำถาม 5 — Secrets Management**:
 เหตุใดจึงต้องใช้ GitHub Secrets แทนการเขียนค่า credentials โดยตรงใน workflow YAML file? ถ้าใส่ค่า JWT_SECRET ตรงๆ ใน YAML จะเกิดอะไรขึ้น?
 
 ```plaintext
-# ตอบที่นี่
+GitHub Secrets ถือเป็นแนวปฏิบัติที่สำคัญมากในด้านความปลอดภัย เพราะช่วยให้เราสามารถแยกข้อมูลที่ละเอียดอ่อน ออกจาก Source Code ได้อย่างเด็ดขาด ระบบ GitHub Secrets จะทำการเข้ารหัส (Encrypt) ข้อมูลเหล่านั้นไว้ และจะถูกเรียกออกมาใช้งานเฉพาะในตอนที่ Pipeline กำลังรันอยู่เท่านั้น โดยที่ไม่มีใครสามารถกดดูค่าที่แท้จริงผ่านหน้าเว็บ GitHub ได้อีกหลังจากบันทึกไปแล้ว
+
+หากเราเปลี่ยนไปใส่ค่าอย่าง JWT_SECRET ตรงๆ ในไฟล์ YAML ของ workflow จะส่งผลให้ค่านั้นกลายเป็นข้อความธรรมดา ที่ใครก็ตามที่มีสิทธิ์เข้าถึงจะสามารถมองเห็นได้ทันที และหากโปรเจกต์นี้เป็น Public Repository บน GitHub ข้อมูลความลับดังกล่าวก็จะถูกเปิดเผยสู่สาธารณะ ซึ่งเปิดโอกาสให้ผู้ไม่หวังดีสามารถคัดลอก JWT_SECRET ไปใช้ในการปลอมแปลงสิทธิ์ เพื่อล็อกอินเข้าสู่ระบบในฐานะใครก็ได้ รวมถึงสิทธิ์ของผู้ดูแลระบบ (Admin) ส่งผลให้ระบบถูกยึดครองหรือข้อมูลผู้ใช้งานทั้งหมดถูกขโมยไปได้
 
 ```
 
@@ -2553,7 +2658,9 @@ Newman CI tests ต่างจาก Post-Deploy Smoke Tests อย่างไ
 อธิบาย Git Flow ที่ใช้ในโปรเจกต์นี้ (develop → staging → main) ทำไมต้องมีหลาย environment แทนที่จะ deploy ตรงจาก develop ไป production เลย?
 
 ```plaintext
-# ตอบที่นี่
+Git Flow ที่ใช้ในโปรเจกต์นี้ (develop → staging → main) เป็นการจัดระเบียบการทำงานอย่างเป็นลำดับขั้น โดยเริ่มจากdevelop ซึ่งเป็นพื้นที่หลักสำหรับนักพัฒนาในการผสานโค้ดใหม่ๆ เข้าด้วยกันและทำการทดสอบฟังก์ชันในระดับภายใน เมื่อโค้ดบน develop มีความนิ่งและพร้อมที่จะเตรียมเปิดตัว ก็จะถูก Merge ไปยัง staging ซึ่งเป็นสภาพแวดล้อมที่จำลองเหมือนระบบจริงทุกประการ (Pre-production) เพื่อให้ทีม QA หรือลูกค้าได้เข้ามาทดสอบระบบโดยรวม และทำ Smoke Test สภาพแวดล้อมจริง และเมื่อทุกอย่างได้รับการอนุมัติว่าไม่มีข้อผิดพลาด โค้ดจึงจะถูก Merge เข้าสู่ main ซึ่งเป็นกิ่งสูงสุดที่จะ Deploy ตรงไปยัง Production เพื่อเปิดให้ผู้ใช้งานจริงเข้ามาใช้งาน
+
+เหตุผลสำคัญที่เราจำเป็นต้องมีหลาย Environment แทนที่จะ Deploy ตรงจาก develop ไป production เลย เพราะการพัฒนาซอฟต์แวร์มักมีความไม่แน่นอนสูง หากเรา Deploy ตรงจาก develop ไปยัง Production ทันที บั๊กที่เกิดจากการทำงานร่วมกันของโค้ดหลายๆ คน, ความผิดพลาดจากการตั้งค่าระบบ, หรือปัญหาคอขวดที่พบเฉพาะบน Server จริง ก็จะส่งผลกระทบต่อผู้ใช้งานทั่วไป (End-users) โดยตรงและทันที ซึ่งอาจสร้างความเสียหายต่อธุรกิจ ภาพลักษณ์ และความน่าเชื่อถือขององค์กร การมีหลาย Environment จึงช่วยให้เราสามารถดักจับและแก้ไขข้อผิดพลาดเหล่านั้นได้
 
 ```
 
