@@ -249,13 +249,13 @@ RUN chmod +x ./docker-entrypoint.sh
 
 ### Checklist ก่อนเริ่มส่วนที่ 1
 
-- [ ] ติดตั้ง Git for Windows สำเร็จ
-- [ ] `git config --global core.autocrlf` แสดงค่า `false`
-- [ ] VS Code ตั้งค่า `files.eol: "\n"` แล้ว
-- [ ] VS Code ใช้ Git Bash เป็น default terminal
-- [ ] มุมขวาล่าง VS Code แสดง `LF` (ไม่ใช่ `CRLF`)
-- [ ] สร้างและ commit `.gitattributes` แล้ว (ทำหลัง Clone ในส่วนที่ 1.2)
-- [ ] เพิ่ม `sed -i 's/\r$//'` ใน `Dockerfile` แล้ว
+- [ ✓] ติดตั้ง Git for Windows สำเร็จ
+- [ ✓] `git config --global core.autocrlf` แสดงค่า `false`
+- [ ✓] VS Code ตั้งค่า `files.eol: "\n"` แล้ว
+- [ ✓] VS Code ใช้ Git Bash เป็น default terminal
+- [ ✓] มุมขวาล่าง VS Code แสดง `LF` (ไม่ใช่ `CRLF`)
+- [ ✓] สร้างและ commit `.gitattributes` แล้ว (ทำหลัง Clone ในส่วนที่ 1.2)
+- [ ✓] เพิ่ม `sed -i 's/\r$//'` ใน `Dockerfile` แล้ว
 
 ---
 
@@ -2504,7 +2504,9 @@ options: >-
 
 ```plaintext
 # ตอบที่นี่
+CI = เขียนโค้ด -> รวมโค้ด -> ตรวจว่าพังไหม (เน้นคุณภาพของโค้ด)
 
+CD = โค้ดดีแล้ว -> ส่งตรงถึงมือผู้ใช้ (เน้นความเร็วและความสม่ำเสมอในการส่งมอบ)
 ```
 
 **คำถาม 2 — Multi-Service Architecture**:
@@ -2512,7 +2514,42 @@ options: >-
 
 ```plaintext
 # ตอบที่นี่
+การแยกเดพลอย (Deploy) ฝั่ง Frontend ไว้ที่ Vercel และ Backend ไว้ที่ Render เป็นสถาปัตยกรรมที่ได้รับความนิยมมากในปัจจุบัน (เรียกว่า Decoupled หรือ Jamstack architecture) เมื่อเทียบกับการเอาทั้งสองส่วนไปมัดรวมกันแล้วเดพลอยบนเซิร์ฟเวอร์เดียว (เช่น ใน VPS หรือ EC2 เดียวกัน) มีข้อดีและข้อเสียที่แตกต่างกันอย่างชัดเจน ดังนี้ครับ
 
+1. ข้อดีของการแยก Deploy (Vercel + Render)
+ประสิทธิภาพของ Frontend ที่เร็วกว่ามาก (Edge Network/CDN): Vercel ถูกออกแบบมาเพื่อ Frontend โดยเฉพาะ ไฟล์ HTML, CSS, JavaScript ของคุณจะถูกกระจายไปทั่วโลกผ่าน Global CDN (Content Delivery Network) ทำให้ผู้ใช้โหลดหน้าเว็บได้เร็วมาก ไม่ว่าจะอยู่ประเทศไหนก็ตาม ในขณะที่ถ้าใช้เซิร์ฟเวอร์เดียว ความเร็วจะขึ้นอยู่กับตำแหน่งที่ตั้งของเซิร์ฟเวอร์นั้นๆ
+
+การขยายระบบที่เป็นอิสระ (Independent Scaling): หากหน้าเว็บของคุณมีคนเข้าชมถล่มทลาย (Traffic แฝง) แต่ไม่ได้มีการดึงข้อมูลจากฐานข้อมูลหนักๆ Vercel จะขยายตัวรับโหลดได้ทันทีโดยอัตโนมัติ โดยที่ Backend บน Render ไม่ต้องรับภาระนั้นเลย กลับกันถ้า Backend ทำงานหนัก ก็สามารถ Scale อัปเกรดสเปคที่ Render ได้โดยไม่กระทบกับ Frontend
+
+ระบบ CI/CD และ Developer Experience (DX) ที่ยอดเยี่ยม: Vercel มีระบบ Preview Deployment ที่ดีมาก ทุกครั้งที่ Push code หรือสร้าง Pull Request จะมีลิงก์ตัวอย่างแยกมาให้ตรวจงานได้ทันที ทำให้ทีม Frontend และ Backend ทำงานแยกกันได้อย่างอิสระ ไม่ต้องรอ deploy พร้อมกัน
+
+ความทนทานของระบบ (Fault Tolerance): หาก Backend บน Render ล่ม (เช่น ค้าง หรือกำลังรีสตาร์ท) หน้าเว็บ Frontend บน Vercel จะยังคงใช้งานได้ปกติ ผู้ใช้ยังสามารถเปิดหน้าเว็บมาดูข้อมูลหน้าแรก หรือเห็นหน้าแจ้งเตือน Error ที่สวยงามได้ ไม่ใช่เจอหน้าจอขาวหรือ 502 Bad Gateway ทันทีเหมือนเซิร์ฟเวอร์เดี่ยว
+
+2. ข้อเสียของการแยก Deploy (Vercel + Render)
+ปัญหาเรื่อง CORS (Cross-Origin Resource Sharing): เนื่องจากโดเมนของ Frontend (เช่น my-app.vercel.app) และ Backend (เช่น my-api.onrender.com) เป็นคนละโดเมนกัน คุณจะต้องเข้าไปตั้งค่าเปิดสิทธิ์ CORS ที่ฝั่ง Backend เพื่ออนุญาตให้ Frontend ดึงข้อมูลได้ ซึ่งมักจะเป็นจุดที่ทำให้นักพัฒนาติดขัดในช่วงแรก
+
+Network Latency (ความหน่วงระหว่างเซิร์ฟเวอร์): หากมีการทำ Server-Side Rendering (SSR) เช่น ใช้ Next.js บน Vercel แล้วต้องไปดึงข้อมูลจาก Render อีกที จะเกิดความหน่วงจากการส่งข้อมูลข้าม Network ระหว่าง Vercel กับ Render (ต่างจากเซิร์ฟเวอร์เดียวกันที่เรียกใช้ผ่าน localhost ซึ่งเร็วกว่ามาก)
+
+ค่าใช้จ่ายที่อาจซ้ำซ้อนและบานปลาย: แม้ว่าทั้งสองบริการจะมี Free tier แต่ถ้าโปรเจกต์โตขึ้น คุณอาจต้องจ่ายเงินให้ทั้ง Vercel (คิดตามจำนวนนักพัฒนา/Bandwidth) และ Render (คิดตามสเปคเซิร์ฟเวอร์ที่เปิดทิ้งไว้)
+
+Backend บน Render (Free Tier) มีระบบหลับ (Cold Start): หากคุณใช้ Render แพ็กเกจฟรี ถ้าไม่มีคนใช้งานประมาณ 15-15 นาที เซิร์ฟเวอร์ Backend จะ "หลับ" และเมื่อมีคนกดเข้าเว็บครั้งแรก Frontend จะต้องรอ Render ตื่นประมาณ 50 วินาทีถึง 1 นาที ทำให้ผู้ใช้งานรู้สึกว่าเว็บช้ามาก (แก้ไขได้โดยการจ่ายเงินแพ็กเกจเริ่มต้นของ Render หรือใช้บริการ Ping เซิร์ฟเวอร์ไว้)
+
+การจัดการ Domain/SSL และ Environment Variables ที่ยุ่งยากกว่า: คุณต้องเข้าไปจัดการตั้งค่าต่างๆ แยกกันทั้งสองตึก ต้องผูกโดเมนหลักและซับโดเมน (เช่น example.com สำหรับ Vercel และ api.example.com สำหรับ Render)
+
+เปรียบเทียบกับการ Deploy บนเซิร์ฟเวอร์เดียวกัน (Monolith Deploy)
+ข้อดีของการอยู่บนเซิร์ฟเวอร์เดียวกัน:
+
+ง่ายในช่วงเริ่มต้น: โค้ดทุกอย่างอยู่ที่เดียว Deploy ทีเดียวจบ ไม่ต้องปวดหัวเรื่อง CORS
+
+Latency ต่ำ: Frontend และ Backend คุยกันผ่านเครื่องตัวเองได้โดยตรง (Localhost)
+
+ไม่มีปัญหา Cold Start: เซิร์ฟเวอร์รันอยู่ตลอดเวลา ไม่มีอาการเว็บหลับ
+
+ข้อเสียของการอยู่บนเซิร์ฟเวอร์เดียวกัน:
+
+Single Point of Failure: ถ้า Backend ล่ม (เช่น Memory leak หรือโดนยิงถล่ม) หน้าเว็บ Frontend จะล่มตามไปด้วยทันที
+
+ขยายระบบยาก: ถ้าหน้าเว็บโหลดช้าเพราะคนเข้าเยอะ คุณต้องอัปเกรดทั้งเซิร์ฟเวอร์ ซึ่งเปลืองค่าใช้จ่ายมากกว่าการขยายเฉพาะจุด
 ```
 
 **คำถาม 3 — API Testing vs Smoke Testing**:
@@ -2520,7 +2557,15 @@ Newman CI tests ต่างจาก Post-Deploy Smoke Tests อย่างไ
 
 ```plaintext
 # ตอบที่นี่
+Newman CI Tests
+= ตรวจว่า “code และ API logic ยังถูกต้อง”
+Smoke Tests
+= ตรวจว่า “ระบบจริงหลัง deploy ยังใช้งานได้”
 
+CI tests ช่วยกัน “bug จาก code”
+ส่วน Smoke tests ช่วยกัน “bug จาก deployment / infra / config / runtime environment”
+
+ดังนั้น production-grade systems ควรมีทั้งสองชั้นเสมอ
 ```
 
 **คำถาม 4 — Security Layers**:
@@ -2528,13 +2573,13 @@ Newman CI tests ต่างจาก Post-Deploy Smoke Tests อย่างไ
 
 | ชั้น | เครื่องมือ | ป้องกันอะไร |
 |---|---|---|
-| Runtime | Helmet.js | ? |
-| Runtime | express-rate-limit | ? |
-| Runtime | CORS | ? |
-| Runtime | bcryptjs | ? |
-| CI Pipeline | npm audit | ? |
-| CI Pipeline | TruffleHog | ? |
-| CI Pipeline | OWASP Dep-Check | ? |
+| Runtime | Helmet.js | ตั้งค่า HTTP security headers เพื่อป้องกันการโจมตีฝั่ง browser เช่น XSS, Clickjacking, MIME sniffing และลดข้อมูลที่เปิดเผยจาก server|
+| Runtime | express-rate-limit |จำกัดจำนวน request ต่อ IP เพื่อป้องกัน brute-force attacks, credential stuffing, spam และ DoS/DDoS ระดับ application |
+| Runtime | CORS | จำกัดว่า domain ไหนเรียก API ได้ ป้องกันเว็บอันตรายจากการยิง request ข้าม origin หรือ browser-based cross-origin abuse |
+| Runtime | bcryptjs | hash และ salt passwords เพื่อป้องกัน password leakage หาก database ถูกขโมย ลดความเสี่ยงจาก rainbow table และ plaintext password exposure |
+| CI Pipeline | npm audit | ตรวจหา dependency vulnerabilities จาก packages ที่มี CVE หรือ known security issues เพื่อลดความเสี่ยง supply-chain attacks |
+| CI Pipeline | TruffleHog | ตรวจหา secrets ที่หลุดใน source code หรือ Git history เช่น API keys, JWT secrets, tokens, passwords ป้องกัน credential leakage|
+| CI Pipeline | OWASP Dep-Check | วิเคราะห์ third-party libraries และ dependency vulnerabilities ตามฐานข้อมูล CVE/OWASP เพื่อตรวจ package ที่มีช่องโหว่ด้าน security|
 
 ```plaintext
 # ตอบที่นี่
@@ -2546,7 +2591,30 @@ Newman CI tests ต่างจาก Post-Deploy Smoke Tests อย่างไ
 
 ```plaintext
 # ตอบที่นี่
+ถ้าใส่ JWT_SECRET ตรงใน YAML:
 
+secret จะถูกเก็บใน Git history
+คนอื่นอ่านได้
+logs อาจเผยค่า
+attacker อาจปลอม JWT ได้
+production auth อาจถูก compromise
+
+ส่วน GitHub Secrets ช่วย:
+
+ซ่อนค่า secret
+encrypt
+mask logs
+จำกัดสิทธิ์
+rotate ได้ง่าย
+ลดความเสี่ยง secret leakage
+
+ดังนั้น credentials ทุกชนิด เช่น:
+
+JWT_SECRET
+API_KEY
+DB_PASSWORD
+AWS_SECRET_ACCESS_KEY
+OAuth tokens
 ```
 
 **คำถาม 6 — Branch Strategy**:
@@ -2554,7 +2622,18 @@ Newman CI tests ต่างจาก Post-Deploy Smoke Tests อย่างไ
 
 ```plaintext
 # ตอบที่นี่
+develop = รวมงานพัฒนา
+staging = ทดลอง deploy และ test ก่อนใช้งานจริง
+main = production stable branch
 
+การมีหลาย environment ช่วย:
+
+ลดความเสี่ยง production พัง
+เพิ่มคุณภาพ release
+ตรวจ infra/config จริงก่อน deploy
+rollback และ release management ง่ายขึ้น
+
+ดังนั้น staging เป็น “ด่านกันพลาด” ก่อนถึง production จริง
 ```
 
 ---
