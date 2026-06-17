@@ -1,303 +1,670 @@
-# 🏨 Lab: CI/CD with GitHub Actions — ระบบจองห้องพักออนไลน์
+# booking-app-demo-2025
 
-> **ใบงานการทดลอง** สำหรับรายวิชาพัฒนาและปรับใช้ซอฟต์แวร์ (Web Development & DevOps)  
-> ใช้คู่กับ Source Code: [booking-app-demo-2025](https://github.com/surachai-p/booking-app-demo-2025)
+## Features
 
----
+This is a comprehensive hotel booking management system with separate frontend and backend applications.
 
-## 📋 ภาพรวม
+### 🏨 Core Features
 
-ใบงานนี้นำนักศึกษาผ่านกระบวนการ **CI/CD แบบครบวงจร** ของ Full-Stack Web Application จริง โดยไม่ต้องเขียน code ตั้งแต่ต้น แต่เน้นที่การ **ทำความเข้าใจ ตรวจสอบ และปรับปรุง pipeline** ของระบบจองห้องพักออนไลน์ที่มี source code อยู่แล้ว
+- **Public Booking System**: Customers can book hotel rooms through an intuitive web interface
+- **Room Management**: Administrators can add, edit, and manage hotel room inventory
+- **Booking Administration**: Complete CRUD operations for managing reservations
+- **User Authentication**: Secure JWT-based authentication for admin access
+- **Reports & Analytics**: Generate and export booking reports in CSV/JSON formats
+- **Responsive Design**: Modern, mobile-friendly interface built with React and Tailwind CSS
 
-```
-Fork Repository → Local Setup → API Testing → สร้าง CI/CD Pipeline
-      ↓                                                ↓
-  ทำความเข้าใจ                         Security Scan + Deploy + Smoke Test
-  โครงสร้าง                                    ↓
-                                      Production บน Vercel + Render
-```
+### 🔧 Technical Features
 
----
+- **Database**: PostgreSQL with Prisma ORM (migrated from SQLite)
+- **Backend**: Node.js/Express REST API with authentication and validation
+- **Frontend**: React application with Vite build system
+- **Styling**: Tailwind CSS for responsive design
+- **Testing**: Newman API testing and Robot Framework UI testing
+- **CI/CD**: GitHub Actions with self-hosted runners
+- **Deployment**: Multi-environment support (QA, Staging, Production)
 
-## 🎯 วัตถุประสงค์การเรียนรู้
+### 📊 Admin Dashboard
 
-เมื่อทำการทดลองนี้สำเร็จ นักศึกษาจะสามารถ:
+- **Booking Management**: View, create, edit, and cancel bookings
+- **Room Inventory**: Manage room types, capacity, and availability
+- **Reports**: Generate detailed booking reports with export functionality
+- **User Management**: Admin authentication and role-based access control
 
-| # | ทักษะ | ระดับ |
-|---|---|---|
-| 1 | อธิบาย CI/CD workflow และความแตกต่างระหว่าง CI กับ CD | เข้าใจ |
-| 2 | วิเคราะห์โครงสร้าง Node.js/Express + Prisma + React/Vite project | เข้าใจ |
-| 3 | รัน Full-Stack application ด้วย Docker Compose | ปฏิบัติ |
-| 4 | เขียนและรัน API Tests ด้วย Newman (Postman CLI) | ปฏิบัติ |
-| 5 | สร้าง GitHub Actions Workflow ที่มี CI, Security Scan, CD | ปฏิบัติ |
-| 6 | อธิบายและตั้งค่า Security Middleware (Helmet, Rate Limit, CORS, JWT) | ปฏิบัติ |
-| 7 | ออกแบบและรัน Post-Deployment Smoke Tests | ปฏิบัติ |
-| 8 | Deploy Frontend ไปยัง Vercel และ Backend ไปยัง Render/Railway | ปฏิบัติ |
-| 9 | จัดการ Multi-Environment ด้วย Branch Strategy | ประยุกต์ |
+### 🌐 API Endpoints
 
----
+- `POST /api/login` - User authentication
+- `GET/POST/PUT/DELETE /api/bookings` - Booking CRUD operations
+- `GET/POST/PUT/DELETE /api/rooms` - Room management (admin only)
+- `GET /api/reports` - View booking reports
+- `GET /api/reports/export` - Export reports (CSV/JSON)
 
-## 🏗️ สถาปัตยกรรมระบบ
+## Backend: PostgreSQL + Prisma
 
-```
-┌──────────────────────────────────────────────────────────────┐
-│                    booking-app-demo-2025                      │
-├───────────────────────────┬──────────────────────────────────┤
-│        frontend/          │           backend/               │
-│                           │                                  │
-│  React 18 + Vite          │  Node.js 20 + Express            │
-│  Tailwind CSS             │  Prisma ORM                      │
-│  Axios (HTTP client)      │  PostgreSQL 16                   │
-│                           │  JWT Authentication              │
-│                           │  bcryptjs (password hash)        │
-│                           │                                  │
-│  ☁️  Deploy: Vercel        │  ☁️  Deploy: Render / Railway    │
-└───────────────────────────┴──────────────────────────────────┘
-```
+The backend has been migrated from SQLite to PostgreSQL using Prisma ORM.
 
-### API Endpoints
+### Setup
 
-| Method | Endpoint | สิทธิ์ |
-|---|---|---|
-| `POST` | `/api/login` | Public |
-| `GET` / `POST` / `PUT` / `DELETE` | `/api/bookings` | Public (GET POST) / Admin |
-| `GET` / `POST` / `PUT` / `DELETE` | `/api/rooms` | Public (GET) / Admin |
-| `GET` | `/api/reports` | Admin |
-| `GET` | `/api/reports/export` | Admin |
+1. Copy `.env.example` to `.env`:
+   ```bash
+   cd backend
+   cp .env.example .env
+   ```
+2. Update `DATABASE_URL` in `backend/.env` with your PostgreSQL credentials.
+3. Install backend dependencies:
+   ```bash
+   npm install
+   ```
+4. Start the local PostgreSQL container:
+   ```bash
+   cd backend
+   docker compose up -d
+   ```
+5. Generate the Prisma client:
+   ```bash
+   npx prisma generate
+   ```
+6. Run migrations:
+   ```bash
+   npx prisma migrate dev --name init
+   ```
+7. Start the backend:
+   ```bash
+   npm run dev
+   ```
 
----
+### Notes
 
-## 🔄 CI/CD Pipeline ที่สร้างในการทดลอง
+- Default `JWT_SECRET` is set in `.env`.
+- The local PostgreSQL connection string in `.env` is a placeholder and must be updated to match your environment.
+- The old `bookings.db` SQLite file has been removed.
 
-```
-Push to GitHub
-       │
-       ▼
-┌──────────────────────┬───────────────────────┐
-│  backend-test        │  frontend-build        │
-│  ─────────────────   │  ──────────────────    │
-│  • Prisma migrate    │  • npm ci              │
-│  • Seed test data    │  • vite build          │
-│  • Newman API tests  │  • Upload artifacts    │
-└──────────┬───────────┴────────────┬───────────┘
-           └────────────┬───────────┘
-                        ▼
-           ┌────────────────────────┐
-           │    security-scan       │
-           │  ──────────────────    │
-           │  • npm audit (High+)   │
-           │  • TruffleHog secrets  │
-           │  • OWASP dep-check     │
-           └────────────┬───────────┘
-                        ▼  (เฉพาะ main branch)
-       ┌────────────────┼────────────────┐
-       ▼                ▼                ▼
-┌─────────────┐  ┌─────────────┐  ┌─────────────┐
-│deploy-front │  │deploy-render│  │deploy-railway│
-│  (Vercel)   │  │  (Backend)  │  │  (Backend)  │
-└──────┬──────┘  └──────┬──────┘  └──────┬──────┘
-       └────────────────┼─────────────────┘
-                        ▼
-           ┌────────────────────────┐
-           │  post-deploy-smoke-test │
-           │  ───────────────────── │
-           │  • Newman on Production │
-           │  • Security headers ✓  │
-           │  • Frontend reachable ✓│
-           └────────────────────────┘
-```
+## GitHub Self-hosted Runner
 
----
+This repository can run on a GitHub self-hosted runner. Follow these steps to set it up and test it.
 
-## 📁 โครงสร้างไฟล์ที่เกี่ยวข้อง
+### 1. เตรียมเครื่อง self-hosted runner
 
-```
-booking-app-demo-2025/         ← Fork จาก surachai-p
-├── frontend/
-│   ├── src/
-│   ├── package.json
-│   └── vite.config.js
-├── backend/
-│   ├── prisma/
-│   │   └── schema.prisma      ← Database schema (Room, Booking, User)
-│   ├── routes/
-│   ├── middleware/
-│   ├── server.js              ← เพิ่ม Helmet, CORS, Rate Limit
-│   ├── package.json
-│   └── docker-compose.yml     ← Local PostgreSQL
-├── tests/
-│   ├── booking-api.postman_collection.json   ← Newman CI tests
-│   └── smoke-tests.postman_collection.json  ← Post-deploy smoke tests
-└── .github/
-    └── workflows/
-        ├── ci-cd.yml          ← Main pipeline (ส่วนที่ 6)
-        └── deploy-qa.yml      ← QA pipeline (ส่วนที่ 7)
-```
+1. เลือกเครื่องที่จะใช้เป็น runner (Linux/macOS/Windows).
+2. ติดตั้ง Git และ Node.js.
+3. ถ้าจะใช้ Docker ให้ติดตั้ง Docker ด้วย.
 
----
+### 2. สร้าง runner ใน GitHub
 
-## 📚 เนื้อหาการทดลอง (13 ส่วน)
+1. ไปที่ GitHub repository ของคุณ.
+2. เลือก `Settings` > `Actions` > `Runners`.
+3. คลิก `New self-hosted runner`.
+4. เลือกระบบปฏิบัติการที่ใช้งาน.
+5. คัดลอกคำสั่ง `config` และ `run` ที่ GitHub ให้มา.
 
-| ส่วน | หัวข้อ | เวลาโดยประมาณ |
-|---|---|---|
-| **0** | ⚠️ ตั้งค่าสำหรับ Windows — Git Bash, LF, `.gitattributes`, VS Code | 20 นาที |
-| **1** | เตรียมโปรเจกต์ — Fork, Clone, ทำความเข้าใจโครงสร้าง | 15 นาที |
-| **2** | Database Schema ด้วย Prisma — อ่านและวิเคราะห์ models | 10 นาที |
-| **3** | Local Development — Docker Compose, Prisma migrate, ทดสอบ API | 20 นาที |
-| **4** | API Testing ด้วย Newman — เขียน Collection, รัน tests | 30 นาที |
-| **5** | วิเคราะห์ Workflow ที่มีอยู่ — ข้อดี/ข้อเสีย/ข้อจำกัด | 10 นาที |
-| **6** | สร้าง CI/CD Workflow สมบูรณ์ — 6 jobs ใน GitHub Actions | 30 นาที |
-| **7** | Multi-Environment Strategy — QA/Staging/Production | 20 นาที |
-| **8** | ตั้งค่า Cloud Platforms — Vercel, Render, GitHub Secrets | 30 นาที |
-| **9** | Push & Test Pipeline — Post-Deployment Smoke Tests | 20 นาที |
-| **10** | Security ใน CI/CD — Helmet, Rate Limit, CORS, npm audit, TruffleHog | 25 นาที |
-| **11** | Debug Guide — ปัญหาทั่วไปและปัญหาเฉพาะ Windows | อ้างอิง |
-| **12** | สรุปและประเมินผล — Checklist + คำถาม 6 ข้อ | 20 นาที |
+### 3. ติดตั้ง runner บนเครื่อง
 
-**เวลารวมโดยประมาณ: 3–4 ชั่วโมง** (Windows เพิ่มอีก ~20 นาที)
-
----
-
-## 🪟 สำหรับผู้ใช้ Windows (ทำก่อนเริ่มทดลอง)
-
-> macOS / Linux ข้ามส่วนนี้ได้เลย
+ตัวอย่างบน Linux / macOS:
 
 ```bash
-# 1. ติดตั้ง Git for Windows → เลือก "Checkout as-is, commit as-is"
-# 2. เปิด Git Bash แล้วรัน:
-git config --global core.autocrlf false
-
-# 3. ตั้งค่า VS Code
-# settings.json → "files.eol": "\n"
-# Default terminal → Git Bash
-
-# 4. หลัง Clone → สร้าง .gitattributes ทันที
-cat > .gitattributes << 'EOF'
-*.sh text eol=lf
-Dockerfile text eol=lf
-docker-compose.yml text eol=lf
-*.yml text eol=lf
-*.json text eol=lf
-*.js text eol=lf
-*.prisma text eol=lf
-EOF
-git add .gitattributes && git commit -m "chore: enforce LF"
-git rm --cached -r . && git reset --hard
-
-# 5. เพิ่มใน backend/Dockerfile (safety net)
-# COPY docker-entrypoint.sh ./
-# RUN sed -i 's/\r$//' ./docker-entrypoint.sh   ← เพิ่มบรรทัดนี้
-# RUN chmod +x ./docker-entrypoint.sh
+mkdir actions-runner && cd actions-runner
+curl -o actions-runner.tar.gz -L https://github.com/actions/runner/releases/download/v2.308.0/actions-runner-linux-x64-2.308.0.tar.gz
+tar xzf actions-runner.tar.gz
+./config.sh --url https://github.com/<owner>/<repo> --token <TOKEN>
 ```
 
-ดูรายละเอียดทั้งหมดได้ที่ **ส่วนที่ 0** ในใบงาน
+บน Windows:
 
----
+```powershell
+mkdir actions-runner
+cd actions-runner
+Invoke-WebRequest -Uri https://github.com/actions/runner/releases/download/v2.308.0/actions-runner-win-x64-2.308.0.zip -OutFile actions-runner.zip
+Expand-Archive actions-runner.zip
+.\\config.cmd --url https://github.com/<owner>/<repo> --token <TOKEN>
+```
 
+### 4. เริ่ม runner
 
+- Linux/macOS:
+  ```bash
+  ./run.sh
+  ```
+- Windows:
+  ```powershell
+  .\run.cmd
+  ```
 
-### ซอฟต์แวร์ (ติดตั้งล่วงหน้า)
+ถ้าต้องการให้เป็น service บน Linux/macOS:
 
 ```bash
-# ตรวจสอบว่าติดตั้งครบ
-git --version          # ≥ 2.40
-node --version         # = 20.x LTS
-npm --version          # ≥ 10.x
-docker --version       # ≥ 24.x
-docker compose version # ≥ 2.x
-
-# ติดตั้ง Newman (API test runner)
-npm install -g newman newman-reporter-htmlextra
-newman --version
+sudo ./svc.sh install
+sudo ./svc.sh start
 ```
 
-### Accounts (สมัครล่วงหน้า ฟรีทั้งหมด)
+### 5. สร้าง workflow ให้ใช้ self-hosted runner
 
-| Service | URL | ใช้สำหรับ |
-|---|---|---|
-| GitHub | github.com | Repository + GitHub Actions |
-| Vercel | vercel.com | Deploy Frontend (React) |
-| Render | render.com | Deploy Backend (Node.js) + PostgreSQL |
-| Railway *(ทางเลือก)* | railway.app | Deploy Backend ทางเลือก |
+สร้างไฟล์ `.github/workflows/ci.yml` ใน repository:
 
----
+```yaml
+name: CI
 
-## 🔐 GitHub Secrets ที่ต้องตั้งค่า
+on:
+  push:
+    branches: [ main ]
+  pull_request:
 
-ใน Repository → Settings → Secrets and variables → Actions:
+jobs:
+  build:
+    runs-on: self-hosted
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install backend dependencies
+        run: |
+          cd backend
+          npm install
+      - name: Start PostgreSQL with Docker Compose
+        run: |
+          cd backend
+          docker compose up -d
+      - name: Generate Prisma client
+        run: |
+          cd backend
+          npx prisma generate
+      - name: Run backend migrations
+        run: |
+          cd backend
+          npx prisma migrate dev --name init
+      - name: Install frontend dependencies
+        run: |
+          cd frontend
+          npm install
+      - name: Build frontend
+        run: |
+          cd frontend
+          npm run build
+```
 
-| Secret | ได้จาก |
-|---|---|
-| `VERCEL_TOKEN` | Vercel → Account Settings → Tokens |
-| `VERCEL_FRONTEND_URL` | Vercel → Project → Domain |
-| `RENDER_DEPLOY_HOOK_URL` | Render → Service → Settings → Deploy Hooks |
-| `RENDER_BACKEND_URL` | Render → Service → URL (ไม่มี `/` ท้าย) |
-| `RAILWAY_TOKEN` | Railway → Account Settings → Tokens |
-| `RAILWAY_PROJECT_ID` | Railway → Project → Settings |
-| `RAILWAY_BACKEND_URL` | Railway → Service → Networking |
+> ตัวอย่าง workflow นี้อยู่ที่ `.github/workflows/ci.yml`
 
----
+### 6. ทดสอบ workflow
 
-## 🔒 Security Tools ที่ใช้ในการทดลอง
+1. เพิ่มไฟล์ workflow แล้ว commit และ push ขึ้น GitHub.
+2. เข้า `Actions` ใน repository ดูสถานะ workflow.
+3. ถ้า runner ทำงานได้สำเร็จ แสดงว่า setup ถูกต้อง.
 
-| เครื่องมือ | ประเภท | ป้องกัน |
-|---|---|---|
-| **Helmet.js** | Runtime Middleware | XSS, Clickjacking, MIME Sniffing, HTTPS Downgrade |
-| **express-rate-limit** | Runtime Middleware | Brute Force, DDoS, API Scraping |
-| **CORS** | Runtime Middleware | Cross-Origin Request จาก domain ที่ไม่อนุญาต |
-| **bcryptjs** | Runtime Library | Plain-text password storage |
-| **JWT + Expiry** | Runtime Auth | Unauthorized API access |
-| **npm audit** | CI Scan | Known vulnerabilities ใน dependencies |
-| **TruffleHog** | CI Scan | Hardcoded secrets / API keys ใน code |
-| **OWASP Dep-Check** | CI Scan | CVE database cross-reference |
+> หมายเหตุ: ถ้าใช้ Docker ใน runner ให้ตรวจสอบว่า Docker service ทำงานได้บนเครื่อง self-hosted.
 
----
+## CI/CD Deployment
 
-## ✅ Checklist สรุปก่อนส่ง
+This repository supports CI/CD deployment with frontend on Vercel and backend on cloud platforms.
 
-**Local & Testing**
-- [ ] รัน backend + frontend ในเครื่องสำเร็จ
-- [ ] Newman tests ผ่านทั้งหมด (positive + negative cases)
-- [ ] รัน `npm audit` ไม่พบ high/critical
+### Frontend Deployment on Vercel
 
-**GitHub Actions**
-- [ ] `ci-cd.yml` มีครบ 6 jobs (test → security → deploy × 3 → smoke)
-- [ ] ทุก job ผ่าน (สีเขียว) บน main branch
-- [ ] Artifacts (Newman report, OWASP report) ถูก upload
+1. **Connect Repository to Vercel**:
+   - Sign up/login to [Vercel](https://vercel.com)
+   - Click "New Project" and import your GitHub repository
+   - Select the repository and configure:
 
-**Cloud Deployment**
-- [ ] Frontend เปิดได้บน Vercel URL
-- [ ] Backend API ตอบสนองบน Render URL
-- [ ] Security headers ปรากฏใน curl response
-- [ ] Smoke tests ผ่านบน production
+2. **Vercel Configuration**:
+   - **Framework Preset**: Vite
+   - **Root Directory**: `frontend`
+   - **Build Command**: `npm run build`
+   - **Output Directory**: `dist`
 
-**คำถามทบทวน (6 ข้อ)**
-- [ ] ตอบครบทุกข้อในใบงาน
+3. **Environment Variables**:
+   Add these environment variables in Vercel dashboard:
+   ```
+   VITE_API_URL=https://your-backend-domain.com
+   ```
 
----
+4. **Deploy**:
+   - Vercel will automatically deploy on every push to `main` branch
+   - Get the frontend URL from Vercel dashboard
 
-## 📖 ไฟล์ใบงาน
+### Backend Deployment Options
 
-| ไฟล์ | คำอธิบาย |
-|---|---|
-| [`Lab_Booking_CICD_with_GitHub_Action.md`](./Lab_Booking_CICD_with_GitHub_Action.md) | ใบงานการทดลองฉบับเต็ม (12 ส่วน) |
-| `README.md` | ไฟล์นี้ — ภาพรวมและคู่มือเริ่มต้น |
+Choose one of the following platforms for backend deployment:
 
----
+#### Option 1: Render
 
-## 🔗 แหล่งข้อมูลเพิ่มเติม
+1. **Create Render Account**:
+   - Sign up at [Render](https://render.com)
 
-- [📦 Source Code Repository](https://github.com/surachai-p/booking-app-demo-2025)
-- [📘 GitHub Actions Docs](https://docs.github.com/en/actions)
-- [🔷 Prisma Docs](https://www.prisma.io/docs)
-- [🧪 Newman Docs](https://learning.postman.com/docs/running-collections/using-newman-cli/)
-- [🛡️ Helmet.js Docs](https://helmetjs.github.io/)
-- [🚦 express-rate-limit Docs](https://express-rate-limit.mintlify.app/)
-- [🔍 OWASP API Security Top 10](https://owasp.org/www-project-api-security/)
-- [🕵️ TruffleHog](https://github.com/trufflesecurity/trufflehog)
-- [☁️ Vercel Docs](https://vercel.com/docs)
-- [☁️ Render Docs](https://render.com/docs)
+2. **Create PostgreSQL Database**:
+   - Go to Dashboard > New > PostgreSQL
+   - Create database and note the connection string
 
----
+3. **Deploy Backend**:
+   - New > Web Service
+   - Connect GitHub repository
+   - Configure:
+     - **Runtime**: Node
+     - **Build Command**: `npm install && npx prisma generate`
+     - **Start Command**: `npm start`
+     - **Root Directory**: `backend`
 
-*สร้างเพื่อการเรียนการสอน — Web Development & DevOps Workshop 2025*
+4. **Environment Variables**:
+   ```
+   DATABASE_URL=postgresql://user:password@host:5432/database
+   JWT_SECRET=your-secret-key
+   NODE_ENV=production
+   ```
+
+#### Option 2: Railway
+
+1. **Create Railway Account**:
+   - Sign up at [Railway.app](https://railway.app)
+
+2. **Create Project**:
+   - New Project > Deploy from GitHub
+   - Select repository
+
+3. **Database Setup**:
+   - Add PostgreSQL plugin
+   - Railway will provide `DATABASE_URL` automatically
+
+4. **Environment Variables**:
+   ```
+   JWT_SECRET=your-secret-key
+   NODE_ENV=production
+   ```
+
+#### Option 3: Digital Ocean App Platform
+
+1. **Create Digital Ocean Account**:
+   - Sign up at [Digital Ocean](https://digitalocean.com)
+
+2. **Create App**:
+   - Apps > Create App
+   - Connect GitHub repository
+   - **Source Directory**: `backend`
+
+3. **Database Setup**:
+   - Create PostgreSQL database in Digital Ocean
+   - Add database connection string
+
+4. **Environment Variables**:
+   ```
+   DATABASE_URL=postgresql://user:password@host:5432/database
+   JWT_SECRET=your-secret-key
+   NODE_ENV=production
+   ```
+
+### Nginx Reverse Proxy Configuration
+
+For production deployment with custom domain, use Nginx as reverse proxy:
+
+1. **Install Nginx**:
+   ```bash
+   sudo apt update
+   sudo apt install nginx
+   ```
+
+2. **Create Nginx Configuration**:
+   Create `/etc/nginx/sites-available/booking-app`:
+
+   ```nginx
+   server {
+       listen 80;
+       server_name your-domain.com;
+
+       # Frontend (served by Vercel or static files)
+       location / {
+           proxy_pass https://your-vercel-app.vercel.app;
+           proxy_set_header Host $host;
+           proxy_set_header X-Real-IP $remote_addr;
+           proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+           proxy_set_header X-Forwarded-Proto $scheme;
+       }
+
+       # Backend API
+       location /api/ {
+           proxy_pass http://localhost:3001;
+           proxy_set_header Host $host;
+           proxy_set_header X-Real-IP $remote_addr;
+           proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+           proxy_set_header X-Forwarded-Proto $scheme;
+
+           # CORS headers
+           add_header 'Access-Control-Allow-Origin' 'https://your-vercel-app.vercel.app' always;
+           add_header 'Access-Control-Allow-Methods' 'GET, POST, PUT, DELETE, OPTIONS' always;
+           add_header 'Access-Control-Allow-Headers' 'Authorization, Content-Type' always;
+
+           if ($request_method = 'OPTIONS') {
+               return 204;
+           }
+       }
+   }
+   ```
+
+3. **Enable Site**:
+   ```bash
+   sudo ln -s /etc/nginx/sites-available/booking-app /etc/nginx/sites-enabled/
+   sudo nginx -t
+   sudo systemctl reload nginx
+   ```
+
+4. **SSL with Let's Encrypt** (optional):
+   ```bash
+   sudo apt install certbot python3-certbot-nginx
+   sudo certbot --nginx -d your-domain.com
+   ```
+
+### Environment Variables Configuration
+
+#### Frontend (.env.local for local development):
+```
+VITE_API_URL=http://localhost:3001
+```
+
+#### Frontend (Vercel environment variables):
+```
+VITE_API_URL=https://your-backend-domain.com
+```
+
+#### Backend (.env for all environments):
+```
+DATABASE_URL=postgresql://user:password@host:5432/database
+JWT_SECRET=your-secure-jwt-secret
+NODE_ENV=production
+```
+
+### Deployment Checklist
+
+- [ ] Frontend deployed on Vercel
+- [ ] Backend deployed on chosen platform (Render/Railway/Digital Ocean)
+- [ ] Database configured and migrated
+- [ ] Environment variables set correctly
+- [ ] Nginx reverse proxy configured (if using custom domain)
+- [ ] SSL certificate configured
+- [ ] Test API endpoints from frontend
+- [ ] Verify CORS configuration
+
+## Multiple Environments (QA, Staging, Production)
+
+For production deployments, it's recommended to have separate environments for QA, Staging, and Production.
+
+### Git Branching Strategy
+
+Use Git Flow or similar branching strategy:
+
+```
+main (Production) ────┐
+                      ├── deploy to Production
+staging ──────────────┤
+                      ├── deploy to Staging
+develop ──────────────┐
+                      ├── deploy to QA
+feature/* ────────────┘
+```
+
+- **main**: Production-ready code
+- **staging**: Release candidate testing
+- **develop**: Development integration
+- **feature/***: Individual feature development
+
+### Environment-specific Configurations
+
+#### 1. GitHub Environments
+
+Create environments in GitHub repository:
+
+1. Go to Repository Settings > Environments
+2. Create environments: `qa`, `staging`, `production`
+3. Add environment secrets and variables for each environment
+
+#### 2. Deployment Workflows
+
+Create separate workflow files for each environment:
+
+**`.github/workflows/deploy-qa.yml`**:
+```yaml
+name: Deploy to QA
+
+on:
+  push:
+    branches: [ develop ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: qa
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy Frontend to Vercel
+        run: |
+          # Vercel CLI deployment for QA
+          npm install -g vercel
+          cd frontend
+          vercel --prod --token ${{ secrets.VERCEL_TOKEN }} --scope ${{ secrets.VERCEL_SCOPE }}
+
+      - name: Deploy Backend to Render
+        run: |
+          # Trigger Render deployment via webhook or API
+          curl -X POST ${{ secrets.RENDER_DEPLOY_WEBHOOK }}
+```
+
+**`.github/workflows/deploy-staging.yml`**:
+```yaml
+name: Deploy to Staging
+
+on:
+  push:
+    branches: [ staging ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy Frontend to Vercel
+        run: |
+          npm install -g vercel
+          cd frontend
+          vercel --prod --token ${{ secrets.VERCEL_TOKEN }} --scope ${{ secrets.VERCEL_SCOPE }}
+
+      - name: Deploy Backend
+        run: |
+          # Railway deployment
+          curl -X POST ${{ secrets.RAILWAY_DEPLOY_WEBHOOK }}
+```
+
+**`.github/workflows/deploy-production.yml`**:
+```yaml
+name: Deploy to Production
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy Frontend to Vercel
+        run: |
+          npm install -g vercel
+          cd frontend
+          vercel --prod --token ${{ secrets.VERCEL_TOKEN }} --scope ${{ secrets.VERCEL_SCOPE }}
+
+      - name: Deploy Backend
+        run: |
+          # Digital Ocean deployment
+          curl -X POST ${{ secrets.DO_DEPLOY_WEBHOOK }}
+```
+
+#### 3. Environment Variables Management
+
+Create environment-specific variable files:
+
+**`frontend/.env.qa`**:
+```
+VITE_API_URL=https://qa-api.yourdomain.com
+```
+
+**`frontend/.env.staging`**:
+```
+VITE_API_URL=https://staging-api.yourdomain.com
+```
+
+**`frontend/.env.production`**:
+```
+VITE_API_URL=https://api.yourdomain.com
+```
+
+**`backend/.env.qa`**:
+```
+DATABASE_URL=postgresql://user:pass@qa-db-host:5432/qa_db
+JWT_SECRET=qa-secret-key
+NODE_ENV=production
+```
+
+**`backend/.env.staging`**:
+```
+DATABASE_URL=postgresql://user:pass@staging-db-host:5432/staging_db
+JWT_SECRET=staging-secret-key
+NODE_ENV=production
+```
+
+**`backend/.env.production`**:
+```
+DATABASE_URL=postgresql://user:pass@prod-db-host:5432/prod_db
+JWT_SECRET=prod-secret-key
+NODE_ENV=production
+```
+
+### Platform-specific Environment Setup
+
+#### Vercel Environment Variables
+
+For each Vercel project (QA, Staging, Production):
+
+1. Go to Vercel Dashboard > Project Settings > Environment Variables
+2. Add variables for each environment:
+   - QA: `VITE_API_URL=https://qa-api.yourdomain.com`
+   - Staging: `VITE_API_URL=https://staging-api.yourdomain.com`
+   - Production: `VITE_API_URL=https://api.yourdomain.com`
+
+#### Backend Platform Environment Variables
+
+**Render**:
+- Environment: Static (or pull from GitHub secrets)
+- Add variables in Render dashboard for each service
+
+**Railway**:
+- Environment Variables in Railway dashboard
+- Can use Railway's built-in environment management
+
+**Digital Ocean**:
+- Environment Variables in App Platform settings
+- Separate apps for each environment
+
+### Nginx Configuration for Multiple Environments
+
+Create separate Nginx configurations for each environment:
+
+**`/etc/nginx/sites-available/booking-qa`**:
+```nginx
+server {
+    listen 80;
+    server_name qa.yourdomain.com;
+
+    location / {
+        proxy_pass https://qa-vercel-app.vercel.app;
+        # ... proxy settings
+    }
+
+    location /api/ {
+        proxy_pass http://localhost:3002;  # QA backend port
+        # ... proxy and CORS settings
+    }
+}
+```
+
+**`/etc/nginx/sites-available/booking-staging`**:
+```nginx
+server {
+    listen 80;
+    server_name staging.yourdomain.com;
+
+    location / {
+        proxy_pass https://staging-vercel-app.vercel.app;
+        # ... proxy settings
+    }
+
+    location /api/ {
+        proxy_pass http://localhost:3003;  # Staging backend port
+        # ... proxy and CORS settings
+    }
+}
+```
+
+**`/etc/nginx/sites-available/booking-prod`**:
+```nginx
+server {
+    listen 80;
+    server_name yourdomain.com;
+
+    location / {
+        proxy_pass https://prod-vercel-app.vercel.app;
+        # ... proxy settings
+    }
+
+    location /api/ {
+        proxy_pass http://localhost:3001;  # Production backend port
+        # ... proxy and CORS settings
+    }
+}
+```
+
+### Deployment Checklist for Multiple Environments
+
+#### QA Environment
+- [ ] QA branch created and protected
+- [ ] QA database created
+- [ ] QA Vercel project configured
+- [ ] QA backend service deployed
+- [ ] QA Nginx configuration applied
+- [ ] QA domain/subdomain configured
+
+#### Staging Environment
+- [ ] Staging branch created and protected
+- [ ] Staging database created
+- [ ] Staging Vercel project configured
+- [ ] Staging backend service deployed
+- [ ] Staging Nginx configuration applied
+- [ ] Staging domain/subdomain configured
+
+#### Production Environment
+- [ ] Main branch protected with required reviews
+- [ ] Production database created
+- [ ] Production Vercel project configured
+- [ ] Production backend service deployed
+- [ ] Production Nginx configuration applied
+- [ ] Production domain configured
+- [ ] SSL certificates configured for all domains
+
+### Branch Protection Rules
+
+Configure branch protection in GitHub:
+
+**develop → QA**:
+- Require pull request reviews
+- Require status checks (CI)
+- Restrict pushes to maintainers
+
+**staging → Staging**:
+- Require pull request reviews
+- Require QA approval
+- Require status checks
+
+**main → Production**:
+- Require pull request reviews
+- Require staging approval
+- Require security scans
+- Restrict pushes to release managers
+
