@@ -1,0 +1,24 @@
+services:
+  - type: pserv
+    name: rms-backend
+    env: docker
+    buildCommand: docker build -t rms-backend ./backend
+    dockerfilePath: ./backend/Dockerfile
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: DATABASE_URL
+        sync: false
+      - key: DIRECT_URL
+        sync: false
+      - key: JWT_SECRET
+        sync: false # Set in Render dashboard
+      - key: CORS_ORIGIN
+        sync: false # Set to your frontend URL
+    healthCheckPath: /api/health
+    disk:
+      name: prisma-cache
+      mountPath: /app/prisma
+      sizeGB: 1

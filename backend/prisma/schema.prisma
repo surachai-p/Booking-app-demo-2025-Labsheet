@@ -1,0 +1,135 @@
+// prisma/schema.prisma
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum Role {
+  admin
+  cashier
+  waiter
+}
+
+enum Category {
+  food
+  drink
+  dessert
+}
+
+enum TableStatus {
+  available
+  occupied
+  reserved
+}
+
+enum OrderStatus {
+  open
+  confirmed
+  paid
+  cancelled
+}
+
+enum PaymentMethod {
+  cash
+  card
+  qr
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  username  String   @unique @db.VarChar(50)
+  password  String   @db.VarChar(255)
+  role      Role     @default(waiter)
+  name      String   @db.VarChar(100)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  orders   Order[]   @relation("WaiterOrders")
+  payments Payment[] @relation("CashierPayments")
+
+  @@map("users")
+}
+
+model MenuItem {
+  id          Int      @id @default(autoincrement())
+  name        String   @db.VarChar(100)
+  description String?
+  price       Decimal  @db.Decimal(10, 2)
+  category    Category @default(food)
+  isAvailable Boolean  @default(true)
+  imageUrl    String?  @db.VarChar(255)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  orderItems OrderItem[]
+
+  @@map("menu_items")
+}
+
+model RestaurantTable {
+  id          Int         @id @default(autoincrement())
+  tableNumber Int         @unique
+  capacity    Int         @default(4)
+  status      TableStatus @default(available)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  orders Order[]
+
+  @@map("tables")
+}
+
+model Order {
+  id          Int         @id @default(autoincrement())
+  tableId     Int
+  waiterId    Int?
+  status      OrderStatus @default(open)
+  totalAmount Decimal     @default(0) @db.Decimal(10, 2)
+  note        String?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  table   RestaurantTable @relation(fields: [tableId], references: [id])
+  waiter  User?           @relation("WaiterOrders", fields: [waiterId], references: [id])
+  items   OrderItem[]
+  payment Payment?
+
+  @@map("orders")
+}
+
+model OrderItem {
+  id         Int     @id @default(autoincrement())
+  orderId    Int
+  menuItemId Int
+  quantity   Int     @default(1)
+  unitPrice  Decimal @db.Decimal(10, 2)
+  subtotal   Decimal @db.Decimal(10, 2)
+
+  order    Order    @relation(fields: [orderId], references: [id])
+  menuItem MenuItem @relation(fields: [menuItemId], references: [id])
+
+  @@map("order_items")
+}
+
+model Payment {
+  id          Int           @id @default(autoincrement())
+  orderId     Int           @unique
+  cashierId   Int?
+  totalAmount Decimal       @db.Decimal(10, 2)
+  amountPaid  Decimal       @db.Decimal(10, 2)
+  change      Decimal       @db.Decimal(10, 2)
+  method      PaymentMethod @default(cash)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  order   Order @relation(fields: [orderId], references: [id])
+  cashier User? @relation("CashierPayments", fields: [cashierId], references: [id])
+
+  @@map("payments")
+}
