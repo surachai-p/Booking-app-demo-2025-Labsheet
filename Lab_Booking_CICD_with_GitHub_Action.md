@@ -441,7 +441,7 @@ model Booking {
 
 ```plaintext
 # ตอบคำถามที่นี่
-
+ความสัมพันธ์แบบ One-to-Many เพราะในโมเดล Room มีฟิลด์ bookings Booking[] หมายความว่า ห้องพัก 1 ห้อง สามารถมีประวัติการจองได้หลายรายการ ในโมเดล Booking มีฟิลด์ roomId Int และ room Room ตัวเดียวโดดๆ ซึ่งหมายความว่า การจอง 1 รายการ จะต้องผูกกับห้องพักที่เจาะจงได้เพียง 1 ห้องเท่านั้น
 ```
 
 ---
@@ -643,7 +643,20 @@ curl http://localhost:3001/api/reports \
 
 ```plaintext
 # วาง output จาก curl ที่นี่
+# --- 1. ผลการทดสอบ ดูรายการห้องทั้งหมด (GET /api/rooms) ---
+[{"id":2,"roomType":"deluxe","name":"ห้องดีลักซ์","description":"พื้นที่กว้างขึ้น เหมาะสำหรับ 2-3 ท่าน","capacity":3,"price":1800,"createdAt":"2026-05-27T12:35:59.526Z"},{"id":1,"roomType":"standard","name":"ห้องมาตรฐาน","description":"ห้องพักสำหรับ 1-2 ท่าน พร้อมสิ่งอำนวยความสะดวกพื้นฐาน","capacity":2,"price":1200,"createdAt":"2026-05-27T12:35:59.523Z"},{"id":3,"roomType":"suite","name":"ห้องสวีท","description":"ห้องพักขนาดใหญ่สำหรับครอบครัวหรือกลุ่ม","capacity":4,"price":2500,"createdAt":"2026-05-27T12:35:59.527Z"}]
 
+# --- 2. ผลการทดสอบ สร้างการจองใหม่ (POST /api/bookings) ---
+{"id":1,"fullname":"สมชาย ใจดี","email":"somchai@example.com","phone":"0812345678","checkin":"2025-08-01T00:00:00.000Z","checkout":"2025-08-03T00:00:00.000Z","roomtype":"standard","guests":2,"status":"pending","comment":null,"roomId":1,"createdAt":"2026-05-27T12:52:00.657Z"}
+
+# --- 3. ผลการทดสอบ Login เพื่อรับ JWT Token (POST /api/login) ---
+{"token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJhZG1pbiIsImh0bCI6MVRjM090ZzRjNjM1MiwiZXhwIjoxTnc1ODg5OTUyZg.krS4dvP1pSrZMUDJ5skpJ2fXToboZDZpheKuMddZGdo","user":{"id":1,"username":"admin","role":"admin"}}
+
+# --- 4. ผลการทดสอบ ดูรายการจองทั้งหมด (GET /api/bookings + Token) ---
+[{"id":1,"fullname":"????? ????","email":"somchai@example.com","phone":"0812345678","checkin":"2025-08-01T00:00:00.000Z","checkout":"2025-08-03T00:00:00.000Z","roomtype":"standard","guests":2,"status":"pending","comment":null,"roomId":1,"createdAt":"2026-05-27T12:52:00.657Z","room":{"id":1,"roomType":"standard","name":"ห้องมาตรฐาน","description":"ห้องพักสำหรับ 1-2 ท่าน พร้อมสิ่งอำนวยความสะดวกพื้นฐาน","capacity":2,"price":1200,"createdAt":"2026-05-27T12:35:59.523Z"}}]
+
+# --- 5. ผลการทดสอบ ดูรายงาน (GET /api/reports + Token) ---
+{"bookings":[{"id":1,"fullname":"????? ????","email":"somchai@example.com","phone":"0812345678","checkin":"2025-08-01T00:00:00.000Z","checkout":"2025-08-03T00:00:00.000Z","roomtype":"standard","guests":2,"status":"pending","comment":null,"roomId":1,"createdAt":"2026-05-27T12:52:00.657Z","room":{"id":1,"roomType":"standard","name":"ห้องมาตรฐาน","description":"ห้องพักสำหรับ 1-2 ท่าน พร้อมสิ่งอำนวยความสะดวกพื้นฐาน","capacity":2,"price":1200,"createdAt":"2026-05-27T12:35:59.523Z"}}],"summaryByRoom":{"ห้องมาตรฐาน":1},"summaryByStatus":{"pending":1},"totalNights":2,"totalBookings":1}
 
 
 ```
@@ -963,13 +976,16 @@ start newman-report.html       # Windows (Git Bash)
 
 ```plaintext
 # แนบ screenshot ผลการทดสอบที่นี่
-
 ```
+<img width="1919" height="1074" alt="image" src="https://github.com/user-attachments/assets/7b69bec3-e5f1-46f2-8ab8-361acfe69983" />
+
 
 **คำถาม 4.3**: Newman tests ที่เขียนมีการทดสอบทั้ง positive cases (สำเร็จ) และ negative cases (ล้มเหลว) อธิบายให้ครบอย่างน้อย 2 ตัวอย่าง
 
 ```plaintext
 # ตอบคำถามที่นี่
+1. ตัวอย่าง Positive Cases การเข้าสู่ระบบสำเร็จ (Login - Success) ทดสอบส่งคำขอ (Request) ไปที่ endpoint /api/login โดยใช้สิทธิ์ของแอดมินที่มีอยู่จริงในระบบ (username: "admin", password: "admin123") ระบบตรวจสอบว่า API ต้องตอบกลับมาด้วยสถานะ 200 OK และต้องส่งข้อมูลก้อน JSON ที่มี Property ชื่อว่า token (JWT Token) กลับมาให้ เพื่อใช้เป็นกุญแจในการเข้าถึงข้อมูลส่วนอื่นต่อได้
+2. ตัวอย่าง Negative Cases เข้าสู่ระบบด้วยรหัสผ่านที่ผิด (Login - Wrong Password) ทดสอบส่งคำขอไปที่ /api/login โดยแกล้งกรอกรหัสผ่านที่เดาสุ่มหรือผิดพลาด (password: "wrongpassword") เพื่อทดสอบระบบรักษาความปลอดภัยของระบบหลังบ้าน ระบบตรวจสอบว่า API จะต้องทำการปฏิเสธการเข้าถึง และตอบกลับมาด้วยสถานะ 401 Unauthorized ห้ามปล่อยให้สิทธิ์ผ่านเข้าไปเด็ดขาด
 
 ```
 
@@ -996,7 +1012,10 @@ Workflow ที่มีอยู่ใช้ self-hosted runner และทำ
 
 ```plaintext
 # ตอบคำถามที่นี่
-
+การใช้ self-hosted จะช่วยให้ GitHub Actions สามารถเข้ามาสั่งการรันคำสั่งต่างๆ (เช่น build, test) บนเครื่องคอมพิวเตอร์ของเราได้โดยตรง และสามารถเชื่อมต่อกับฐานข้อมูล Local ได้ทันทีโดยไม่ต้องเปิดพอร์ตออกสู่อินเทอร์เน็ตสาธารณะ
+self-hosted (รันบนเครื่องเราเอง) ข้อดี 1. เข้าถึงเครือข่ายภายใน (Local Network/DB) ได้ทันที 2. ไม่เสียค่าใช้จ่าย (ไม่ต้องจ่ายค่านาทีรัน Action ให้ GitHub) 3. ปรับแต่งฮาร์ดแวร์และโปรแกรมในเครื่องได้อิสระ ข้อเสีย 1. ต้องเปิดเครื่องทิ้งไว้และต่อเน็ตตลอดเวลาที่ต้องการรัน CI 2. ต้องดูแลอัปเดตระบบความปลอดภัยของเครื่องด้วยตัวเอง 3. เสี่ยงถูกโจมตีหากรันโค้ดที่ไม่ปลอดภัยบนเครื่องตัวเอง
+ubuntu-latest (รันบนเซิร์ฟเวอร์ GitHub) ข้อดี 1. ไม่ต้องดูแลรักษาเอง (Zero-maintenance) 2. ได้เครื่องใหม่สะอาด (Clean state) ทุกครั้งที่รัน 3. มีความปลอดภัยสูงและอัปเดตระบบปฏิบัติการอัตโนมัติ
+ข้อเสีย 1. มีขีดจำกัดเรื่องระยะเวลาและทรัพยากร (ติดโควต้าฟรี) 2. เข้าถึง Local Database ของเราไม่ได้ (ต้องเซ็ตอัปยุ่งยาก) 3. ไม่สามารถปรับแต่งฮาร์ดแวร์เชิงลึกได้
 ```
 
 ### ขั้นตอนที่ 5.2: วิเคราะห์ข้อจำกัดของ Workflow ปัจจุบัน
