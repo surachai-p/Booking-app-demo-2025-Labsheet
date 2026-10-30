@@ -249,12 +249,12 @@ RUN chmod +x ./docker-entrypoint.sh
 
 ### Checklist ก่อนเริ่มส่วนที่ 1
 
-- [ ] ติดตั้ง Git for Windows สำเร็จ
-- [ ] `git config --global core.autocrlf` แสดงค่า `false`
-- [ ] VS Code ตั้งค่า `files.eol: "\n"` แล้ว
-- [ ] VS Code ใช้ Git Bash เป็น default terminal
-- [ ] มุมขวาล่าง VS Code แสดง `LF` (ไม่ใช่ `CRLF`)
-- [ ] สร้างและ commit `.gitattributes` แล้ว (ทำหลัง Clone ในส่วนที่ 1.2)
+- [ / ] ติดตั้ง Git for Windows สำเร็จ
+- [ / ] `git config --global core.autocrlf` แสดงค่า `false`
+- [ / ] VS Code ตั้งค่า `files.eol: "\n"` แล้ว
+- [ / ] VS Code ใช้ Git Bash เป็น default terminal
+- [ / ] มุมขวาล่าง VS Code แสดง `LF` (ไม่ใช่ `CRLF`)
+- [ / ] สร้างและ commit `.gitattributes` แล้ว (ทำหลัง Clone ในส่วนที่ 1.2)
 - [ ] เพิ่ม `sed -i 's/\r$//'` ใน `Dockerfile` แล้ว
 
 ---
@@ -440,7 +440,7 @@ model Booking {
 **คำถาม 2.1**: จาก schema นี้ ความสัมพันธ์ระหว่าง `Room` และ `Booking` เป็นแบบใด (one-to-one / one-to-many / many-to-many)? อธิบายเหตุผล
 
 ```plaintext
-# ตอบคำถามที่นี่
+# one-to-many เพราะ ห้องพัก 1 ห้องสามารถมีการจองได้หลายครั้ง
 
 ```
 
@@ -642,7 +642,7 @@ curl http://localhost:3001/api/reports \
 **บันทึกผลการทดสอบ**:
 
 ```plaintext
-# วาง output จาก curl ที่นี่
+#{"bookings":[{"id":1,"fullname":"����� 㨴�","email":"somchai@example.com","phone":"0636435185","checkin":"2025-08-01T00:00:00.000Z","checkout":"2025-08-03T00:00:00.000Z","roomtype":"standard","guests":2,"status":"pending","comment":null,"roomId":1,"createdAt":"2026-10-28T08:43:25.694Z","room":{"id":1,"roomType":"standard","name":"ห้องมาตรฐาน","description":"ห้องพักสำหรับ 1-2 ท่าน พร้อมสิ่งอำนวยความสะดวกพื้นฐาน","capacity":2,"price":1200,"createdAt":"2026-10-28T07:56:05.648Z"}}],"summaryByRoom":{"ห้องมาตรฐาน":1},"summaryByStatus":{"pending":1},"totalNights":2,"totalBookings":1}
 
 
 
@@ -961,15 +961,17 @@ start newman-report.html       # Windows (Git Bash)
 
 **แนบรูปผลการทดสอบ Newman**:
 
-```plaintext
-# แนบ screenshot ผลการทดสอบที่นี่
-
-```
+![alt text](image.png)
 
 **คำถาม 4.3**: Newman tests ที่เขียนมีการทดสอบทั้ง positive cases (สำเร็จ) และ negative cases (ล้มเหลว) อธิบายให้ครบอย่างน้อย 2 ตัวอย่าง
 
 ```plaintext
-# ตอบคำถามที่นี่
+# Positive case คือการทดสอบที่สำเร็จ เช่นการ  Login - Success
+  POST http://localhost:3001/api/login [200 OK, 513B, 142ms]
+  √  Status is 200
+  √  Returns JWT token
+
+  ส่วน Negative case คือการทดสอบแล้วใช้ไม่ได้ เช่น ทดสอบไป แล้วขึ้นerror แดง ตามด้วย รหัส Error
 
 ```
 
@@ -995,7 +997,7 @@ Workflow ที่มีอยู่ใช้ self-hosted runner และทำ
 **คำถาม 5.1**: ทำไม workflow ปัจจุบันถึงใช้ `self-hosted` runner? มีข้อดีข้อเสียอะไรเมื่อเทียบกับ `ubuntu-latest`?
 
 ```plaintext
-# ตอบคำถามที่นี่
+# self-hosted ข้อดีคือ Private Network ได้ทันที ข้อเสียคือ ต้องคอยดูแลเอาเอง เมื่อเทียบ กับ ubuntu-latest
 
 ```
 
@@ -1503,6 +1505,7 @@ git push origin main
 
 **แนบรูป GitHub Actions Workflow ที่ผ่านทั้งหมด**:
 
+![alt text](image-1.png)
 ```plaintext
 # แนบ screenshot ที่นี่
 
@@ -1749,7 +1752,18 @@ curl -I $BACKEND/api/rooms
 **บันทึกผลการทดสอบบน Production**:
 
 ```plaintext
-# วาง output ที่นี่
+# Content-Type: application/json; charset=utf-8
+Connection: keep-alive
+access-control-allow-origin: *
+etag: W/"32f-QqPjJS6RHBoarydJltvFNeQN7B8"
+rndr-id: d3398c3d-6471-4671
+Server: cloudflare
+vary: Accept-Encoding
+x-powered-by: Express
+x-render-origin-server: Render
+cf-cache-status: DYNAMIC
+CF-RAY: a52c727b59e95805-BKK
+alt-svc: h3=":443"; ma=86400
 
 ```
 
@@ -2503,7 +2517,7 @@ options: >-
 อธิบายความแตกต่างระหว่าง Continuous Integration (CI) และ Continuous Deployment (CD) พร้อมยกตัวอย่างจาก workflow ที่สร้างในการทดลองนี้
 
 ```plaintext
-# ตอบที่นี่
+# CI/CD: CI คือการรวมโค้ดและรันเทสอัตโนมัติ ส่วน CD คือการส่งโค้ดขึ้นเซิร์ฟเวอร์อัตโนมัติเมื่อเทสผ่าน
 
 ```
 
@@ -2511,7 +2525,7 @@ options: >-
 ในโปรเจกต์นี้ Frontend และ Backend ถูก deploy แยกกัน (Vercel vs Render) มีข้อดีและข้อเสียอะไรเมื่อเทียบกับการ deploy บน server เดียวกัน?
 
 ```plaintext
-# ตอบที่นี่
+# Architecture: แยกส่วนช่วยให้สเกลระบบง่ายและอิสระ แต่ซับซ้อนเรื่องการตั้งค่าเชื่อมต่อ
 
 ```
 
@@ -2519,7 +2533,7 @@ options: >-
 Newman CI tests ต่างจาก Post-Deploy Smoke Tests อย่างไร? ทำไมถึงต้องมีทั้งสองแบบ? ยกตัวอย่างสถานการณ์ที่ CI tests ผ่านแต่ Smoke Tests ล้มเหลวได้หรือไม่?
 
 ```plaintext
-# ตอบที่นี่
+# Testing: CI Test ตรวจสอบฟังก์ชันโค้ดระหว่างพัฒนา ส่วน Smoke Test ตรวจสอบความพร้อมของระบบหลัง Deploy จริง
 
 ```
 
@@ -2537,7 +2551,7 @@ Newman CI tests ต่างจาก Post-Deploy Smoke Tests อย่างไ
 | CI Pipeline | OWASP Dep-Check | ? |
 
 ```plaintext
-# ตอบที่นี่
+# Runtime ป้องกันเว็บด้วย Helmet/Rate Limit/CORS/Bcrypt ส่วน CI Pipeline สแกนหาช่องโหว่และข้อมูลลับด้วย npm audit/TruffleHog/Dep-Check
 
 ```
 
@@ -2545,7 +2559,7 @@ Newman CI tests ต่างจาก Post-Deploy Smoke Tests อย่างไ
 เหตุใดจึงต้องใช้ GitHub Secrets แทนการเขียนค่า credentials โดยตรงใน workflow YAML file? ถ้าใส่ค่า JWT_SECRET ตรงๆ ใน YAML จะเกิดอะไรขึ้น?
 
 ```plaintext
-# ตอบที่นี่
+#ป้องกันข้อมูลรั่วไหล หากใส่ตรงๆ คนอื่นจะเห็นและนำไปแฮกแอปพลิเคชันได้
 
 ```
 
@@ -2553,8 +2567,7 @@ Newman CI tests ต่างจาก Post-Deploy Smoke Tests อย่างไ
 อธิบาย Git Flow ที่ใช้ในโปรเจกต์นี้ (develop → staging → main) ทำไมต้องมีหลาย environment แทนที่จะ deploy ตรงจาก develop ไป production เลย?
 
 ```plaintext
-# ตอบที่นี่
-
+#เพื่อทดสอบระบบให้มั่นใจความเสถียรผ่านหลายสภาพแวดล้อมก่อนปล่อยให้ผู้ใช้จริงใช้งาน
 ```
 
 ---
