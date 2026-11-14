@@ -276,7 +276,7 @@ RUN chmod +x ./docker-entrypoint.sh
 ### ขั้นตอนที่ 1.2: Clone Repository มายัง Local Machine
 
 > 🪟 **Windows**: ต้องรันคำสั่งทั้งหมดใน **Git Bash** เท่านั้น (ไม่ใช่ CMD หรือ PowerShell)
-
+เร
 ```bash
 git clone https://github.com/<your-username>/booking-app-demo-2025.git
 cd booking-app-demo-2025
@@ -440,7 +440,7 @@ model Booking {
 **คำถาม 2.1**: จาก schema นี้ ความสัมพันธ์ระหว่าง `Room` และ `Booking` เป็นแบบใด (one-to-one / one-to-many / many-to-many)? อธิบายเหตุผล
 
 ```plaintext
-# ตอบคำถามที่นี่
+# เป็นความสัมพันธ์แบบ one-to-many เพราะ Room มี bookings Booking[] จึงเชื่อมกับการจองได้หลายรายการ ส่วน Booking มี room Room? และ roomId Int? จึงเชื่อมกับห้องได้ไม่เกินหนึ่งห้อง และอาจยังไม่เชื่อมกับห้องก็ได้
 
 ```
 
@@ -642,8 +642,22 @@ curl http://localhost:3001/api/reports \
 **บันทึกผลการทดสอบ**:
 
 ```plaintext
-# วาง output จาก curl ที่นี่
+# 1. GET /api/rooms
+   ผล: HTTP 200 OK — ได้รายการห้อง 3 ห้อง
 
+2. POST /api/bookings
+   ผล: HTTP 201 Created — สร้าง booking สำเร็จ (ID 1, status: pending)
+
+3. POST /api/login
+   ผล: HTTP 200 OK — เข้าสู่ระบบ admin สำเร็จและได้รับ JWT
+   หมายเหตุ: ไม่แนบค่า token
+
+4. GET /api/bookings (ส่ง Bearer token)
+   ผล: HTTP 200 OK — พบ booking “Test Booking”
+
+5. GET /api/reports (ส่ง Bearer token)
+   ผล: HTTP 200 OK — totalBookings: 1, totalNights: 2,
+   summaryByStatus: pending 1 รายการ
 
 
 ```
@@ -962,14 +976,22 @@ start newman-report.html       # Windows (Git Bash)
 **แนบรูปผลการทดสอบ Newman**:
 
 ```plaintext
-# แนบ screenshot ผลการทดสอบที่นี่
+# ![alt text](image.png)
 
 ```
 
 **คำถาม 4.3**: Newman tests ที่เขียนมีการทดสอบทั้ง positive cases (สำเร็จ) และ negative cases (ล้มเหลว) อธิบายให้ครบอย่างน้อย 2 ตัวอย่าง
 
 ```plaintext
-# ตอบคำถามที่นี่
+# Positive cases:
+
+เข้าสู่ระบบด้วย username/password ที่ถูกต้อง ได้ 200 OK และ JWT token
+ดูรายการห้องด้วย GET /api/rooms ได้ 200 OK และข้อมูลเป็น array
+สร้าง booking สำเร็จ ได้ 201 Created พร้อม booking ID
+Negative cases:
+
+เข้าสู่ระบบด้วยรหัสผ่านผิด ต้องได้ 401 Unauthorized
+เรียก GET /api/reports/export โดยไม่ส่ง token ต้องได้ 401 Unauthorized
 
 ```
 
@@ -995,7 +1017,7 @@ Workflow ที่มีอยู่ใช้ self-hosted runner และทำ
 **คำถาม 5.1**: ทำไม workflow ปัจจุบันถึงใช้ `self-hosted` runner? มีข้อดีข้อเสียอะไรเมื่อเทียบกับ `ubuntu-latest`?
 
 ```plaintext
-# ตอบคำถามที่นี่
+# Workflow ใน repository จริงใช้ GitHub-hosted runner (ubuntu-latest) ไม่ใช่ self-hosted ตามที่ใบงานระบุ GitHub-hosted ดูแลและเตรียม runner ให้โดยอัตโนมัติ ส่วน self-hosted ปรับแต่งเครื่องและเข้าถึงระบบภายในได้มากกว่า แต่ต้องดูแลเครื่อง ความปลอดภัย และความพร้อมใช้งานเอง
 
 ```
 
@@ -1005,10 +1027,10 @@ Workflow ปัจจุบันยังขาดส่วนสำคัญ�
 
 | สิ่งที่ขาด | เหตุผลที่ควรมี |
 |---|---|
-| ❌ ไม่มี API Testing (Newman) | ต้องทดสอบ API ก่อน deploy |
-| ❌ ไม่มี Frontend Build & Test | ต้องแน่ใจว่า React app build สำเร็จ |
-| ❌ ไม่มีขั้นตอน Deployment | ไม่มี CD ในวงจร |
-| ❌ ไม่มี Multi-environment | ขาด QA/Staging/Production separation |
+| ✅ API Testing (Newman) |  มีแล้ว |
+| ✅ Frontend Build & Test | มี build แต่ไม่มีคำสั่ง npm run lint แม้ชื่องานจะระบุ Lint |
+| ✅ ขั้นตอน Deployment | มี deploy ไป Vercel และ Render เมื่อ push main |
+| ❌ Multi-environment | ยังไม่ครบ — develop มี trigger แต่ไม่มี QA deploy ที่ทำงานจาก workflow ที่ถูกโหลด และยังไม่มี staging |
 | ❌ ไม่มี Security scanning | ควรสแกน vulnerabilities |
 
 ---
@@ -1504,7 +1526,10 @@ git push origin main
 **แนบรูป GitHub Actions Workflow ที่ผ่านทั้งหมด**:
 
 ```plaintext
-# แนบ screenshot ที่นี่
+# ![alt text](image-1.png)  
+![alt text](image-2.png)  
+![alt text](image-3.png)  
+
 
 ```
 
@@ -1749,7 +1774,19 @@ curl -I $BACKEND/api/rooms
 **บันทึกผลการทดสอบบน Production**:
 
 ```plaintext
-# วาง output ที่นี่
+# Production Test Results
+Date: 2026-11-14
+
+Automated deployment: PASS
+- GitHub Actions run #43574966918: success
+- Vercel deploy hook: triggered successfully
+- Render backend health check: PASS
+
+Manual frontend tests: PENDING
+- Room list: PENDING
+- Booking form: PENDING
+- Admin login: PENDING
+- Admin dashboard: PENDING
 
 ```
 
@@ -2312,7 +2349,27 @@ done
 **คำถาม 10.3**: หลังจากตั้งค่า Helmet แล้ว ให้รัน `curl -I http://localhost:3001/api/rooms` และบันทึก headers ที่ได้ อธิบายว่า header แต่ละตัวป้องกันการโจมตีแบบใด
 
 ```plaintext
-# บันทึก headers และคำอธิบายที่นี่
+# คำสั่ง: curl -I http://localhost:3002/api/rooms
+ผลลัพธ์: HTTP/1.1 200 OK
+
+Content-Security-Policy: จำกัดแหล่งที่มาของสคริปต์และทรัพยากร ช่วยลดความเสี่ยง XSS และ code injection
+Cross-Origin-Opener-Policy: same-origin แยก browsing context จากเว็บไซต์อื่น ช่วยลดความเสี่ยงจาก cross-origin attacks
+Cross-Origin-Resource-Policy: same-origin จำกัดไม่ให้เว็บไซต์อื่นนำ resource นี้ไปโหลด
+Origin-Agent-Cluster: ?1 ขอให้ browser แยกทรัพยากรของ origin นี้ ช่วยเพิ่มการแยกขอบเขตระหว่าง origin
+Referrer-Policy: no-referrer ไม่ส่ง URL ต้นทางไปกับคำขอ จึงลดการรั่วไหลของข้อมูลใน URL
+Strict-Transport-Security: max-age=31536000; includeSubDomains บังคับใช้ HTTPS ในอนาคต แต่ browser จะใช้กฎนี้เมื่อได้รับ header ผ่าน HTTPS
+X-Content-Type-Options: nosniff ป้องกัน browser เดาชนิดไฟล์ผิดจาก Content-Type
+X-DNS-Prefetch-Control: off ปิด DNS prefetch ช่วยลดการเปิดเผยการค้นหาโดเมนล่วงหน้า
+X-Download-Options: noopen ป้องกัน browser รุ่นเก่าบางตัวเปิดไฟล์ดาวน์โหลดในบริบทของเว็บไซต์
+X-Frame-Options: SAMEORIGIN อนุญาตให้แสดงใน iframe จาก origin เดียวกัน ช่วยลดความเสี่ยง clickjacking
+X-Permitted-Cross-Domain-Policies: none ปิด cross-domain policy สำหรับ Flash/PDF รุ่นเก่า
+X-XSS-Protection: 0 ปิด XSS filter รุ่นเก่าของ browser; header นี้ไม่ได้ป้องกัน XSS โดยใช้ CSP ช่วยแทน
+
+หมายเหตุ:
+- ไม่พบ X-Powered-By: Express ซึ่งช่วยลดการเปิดเผยเทคโนโลยี backend
+- Access-Control-Allow-Origin: * มาจาก CORS ไม่ใช่ Helmet และอนุญาตทุก origin ให้เข้าถึง response ได้
+- Content-Type, Content-Length, ETag, Date, Connection และ Keep-Alive เป็นข้อมูลประกอบ HTTP ไม่ใช่ header ป้องกันการโจมตีโดยตรง
+- ทดสอบผ่าน port 3002 เนื่องจาก port 3001 ถูกใช้งานอยู่
 
 ```
 
@@ -2457,45 +2514,45 @@ options: >-
 ตรวจสอบว่าทำสำเร็จทุกข้อ:
 
 **การเตรียม Repository**:
-- [ ] Fork repository `booking-app-demo-2025` สำเร็จ
-- [ ] Clone และทำความเข้าใจโครงสร้างโปรเจกต์ทั้งหมด
-- [ ] อ่านและอธิบาย Prisma schema ได้
+- [✅] Fork repository `booking-app-demo-2025` สำเร็จ
+- [✅] Clone และทำความเข้าใจโครงสร้างโปรเจกต์ทั้งหมด
+- [✅] อ่านและอธิบาย Prisma schema ได้
 
 **Local Development**:
-- [ ] รัน PostgreSQL ด้วย Docker Compose สำเร็จ
-- [ ] รัน Prisma migrations สำเร็จ
-- [ ] Backend server ทำงานและ API endpoints ตอบสนองถูกต้อง
+- [✅] รัน PostgreSQL ด้วย Docker Compose สำเร็จ
+- [✅] รัน Prisma migrations สำเร็จ
+- [✅] Backend server ทำงานและ API endpoints ตอบสนองถูกต้อง
 - [ ] Frontend build สำเร็จและแสดงผลใน browser
 
 **API Testing**:
-- [ ] สร้าง Postman Collection ที่ครอบคลุม endpoints หลัก
-- [ ] รัน Newman tests ในเครื่องผ่านทั้งหมด
-- [ ] ทดสอบทั้ง positive cases และ negative cases
+- [✅] สร้าง Postman Collection ที่ครอบคลุม endpoints หลัก
+- [✅] รัน Newman tests ในเครื่องผ่านทั้งหมด
+- [✅] ทดสอบทั้ง positive cases และ negative cases
 
 **Security**:
-- [ ] ติดตั้งและตั้งค่า Helmet.js ใน backend
+- [✅] ติดตั้งและตั้งค่า Helmet.js ใน backend
 - [ ] ตั้งค่า Rate Limiting สำหรับ API และ Login endpoint
 - [ ] ตั้งค่า CORS อย่างถูกต้อง (ระบุ origin ชัดเจน)
 - [ ] รัน `npm audit` และไม่พบ high/critical vulnerability
 - [ ] Security Scanning Job ทำงานใน GitHub Actions
 
 **GitHub Actions**:
-- [ ] สร้าง workflow ไฟล์ `ci-cd.yml` ที่มีทั้ง CI, Security Scan, CD และ Post-Deploy Test
-- [ ] Workflow ทำงาน automatic เมื่อ push code
-- [ ] Newman tests รันใน CI สำเร็จ
+- [✅] สร้าง workflow ไฟล์ `ci-cd.yml` ที่มีทั้ง CI, Security Scan, CD และ Post-Deploy Test
+- [✅] Workflow ทำงาน automatic เมื่อ push code
+- [✅] Newman tests รันใน CI สำเร็จ
 - [ ] Security scanning job ผ่าน
 - [ ] Post-Deploy Smoke Tests ผ่านบน Production
 
 **Cloud Deployment**:
-- [ ] ตั้งค่า Vercel และ deploy frontend สำเร็จ
-- [ ] ตั้งค่า Render และ deploy backend สำเร็จ
-- [ ] ตั้งค่า GitHub Secrets ครบทุกตัว
-- [ ] Smoke tests ผ่านหลัง deployment
-- [ ] ทดสอบ API บน production URL สำเร็จ
+- [✅] ตั้งค่า Vercel และ deploy frontend สำเร็จ
+- [✅] ตั้งค่า Render และ deploy backend สำเร็จ
+- [✅] ตั้งค่า GitHub Secrets ครบทุกตัว
+- [✅] Smoke tests ผ่านหลัง deployment
+- [✅] ทดสอบ API บน production URL สำเร็จ
 
 **Multi-Environment** (ข้อเพิ่มเติม):
-- [ ] สร้าง GitHub Environments (qa, staging, production)
-- [ ] สร้าง develop branch และ push เพื่อ trigger QA deployment
+- [✅] สร้าง GitHub Environments (qa, staging, production)
+- [✅] สร้าง develop branch และ push เพื่อ trigger QA deployment
 
 ### 12.2 คำถามทบทวน
 
@@ -2503,7 +2560,7 @@ options: >-
 อธิบายความแตกต่างระหว่าง Continuous Integration (CI) และ Continuous Deployment (CD) พร้อมยกตัวอย่างจาก workflow ที่สร้างในการทดลองนี้
 
 ```plaintext
-# ตอบที่นี่
+# CI คือการ build และทดสอบโค้ดอัตโนมัติเมื่อมีการ push หรือ Pull Request เพื่อจับปัญหาเร็ว ในโปรเจกต์นี้ GitHub Actions รัน Frontend build และ Backend/Newman tests ส่วน CD คือการนำโค้ดที่ผ่านการตรวจไป deploy อัตโนมัติ โดย push ไป develop ใช้ QA, push ไป staging ใช้ Staging และ push ไป main ใช้ Production
 
 ```
 
@@ -2511,7 +2568,7 @@ options: >-
 ในโปรเจกต์นี้ Frontend และ Backend ถูก deploy แยกกัน (Vercel vs Render) มีข้อดีและข้อเสียอะไรเมื่อเทียบกับการ deploy บน server เดียวกัน?
 
 ```plaintext
-# ตอบที่นี่
+# การแยก Frontend ไป Vercel และ Backend ไป Render ทำให้แต่ละส่วน deploy และ scale แยกกันได้ ใช้บริการที่เหมาะกับแต่ละเทคโนโลยี และปัญหาของส่วนหนึ่งไม่จำเป็นต้องทำให้อีกส่วนหยุด ข้อเสียคือมีการตั้งค่า URL, CORS, secrets และ monitoring แยกกัน และการสื่อสารระหว่างบริการอาจเพิ่ม latency หรือทำให้หาสาเหตุปัญหายากขึ้น เมื่อเทียบกับการ deploy บน server เดียวกัน
 
 ```
 
@@ -2519,7 +2576,7 @@ options: >-
 Newman CI tests ต่างจาก Post-Deploy Smoke Tests อย่างไร? ทำไมถึงต้องมีทั้งสองแบบ? ยกตัวอย่างสถานการณ์ที่ CI tests ผ่านแต่ Smoke Tests ล้มเหลวได้หรือไม่?
 
 ```plaintext
-# ตอบที่นี่
+# Newman CI tests ทดสอบ API ในสภาพแวดล้อมทดสอบที่ควบคุมได้ ก่อน deploy ส่วน Post-Deploy Smoke Tests ทดสอบระบบจริงหลัง deploy ว่ายังเข้าถึงได้และตั้งค่าถูกต้องหรือไม่ เช่น CI ผ่านแต่ Production ล้มเหลวได้เมื่อ URL หรือ environment variable ผิด หรือ deploy ยังไม่เสร็จ สำหรับ workflow ปัจจุบันมี Render health check ที่ /api/rooms แต่ยังไม่มี Post-Deploy Smoke Tests ครบชุด
 
 ```
 
@@ -2528,16 +2585,16 @@ Newman CI tests ต่างจาก Post-Deploy Smoke Tests อย่างไ
 
 | ชั้น | เครื่องมือ | ป้องกันอะไร |
 |---|---|---|
-| Runtime | Helmet.js | ? |
-| Runtime | express-rate-limit | ? |
-| Runtime | CORS | ? |
-| Runtime | bcryptjs | ? |
-| CI Pipeline | npm audit | ? |
-| CI Pipeline | TruffleHog | ? |
-| CI Pipeline | OWASP Dep-Check | ? |
+| Runtime | Helmet.js | เพิ่ม HTTP security headers เพื่อลดความเสี่ยง เช่น XSS, clickjacking และ MIME sniffing |
+| Runtime | express-rate-limit | จำกัดจำนวน request ช่วยลด brute-force และการส่ง request ถี่เกินไป |
+| Runtime | CORS | ควบคุมว่า browser จาก origin ใดอ่าน response ได้ ไม่ใช่ระบบยืนยันตัวตน |
+| Runtime | bcryptjs | hash รหัสผ่านแบบมี salt ทำให้การกู้รหัสผ่านจากข้อมูลที่รั่วไหลทำได้ยากขึ้น |
+| CI Pipeline | npm audit | ตรวจ dependency ที่มีช่องโหว่ซึ่งมีประกาศไว้ในฐานข้อมูล advisory |
+| CI Pipeline | TruffleHog | ค้นหา secrets หรือ credentials ที่เผลอ commit ลง repository |
+| CI Pipeline | OWASP Dep-Check | ตรวจ dependencies เทียบกับฐานข้อมูลช่องโหว่ CVE |
 
 ```plaintext
-# ตอบที่นี่
+#  ในโค้ดปัจจุบัน Helmet และ bcryptjs ถูกใช้แล้ว แต่ยังไม่พบ express-rate-limit; CORS ใช้ cors() ซึ่งอนุญาต * และ workflow ยังไม่มี Security Scanning jobs สำหรับ TruffleHog หรือ OWASP Dep-Check ส่วน npm install รายงาน vulnerabilities จึงยังไม่ควรเขียนว่า npm audit ผ่าน
 
 ```
 
@@ -2545,7 +2602,7 @@ Newman CI tests ต่างจาก Post-Deploy Smoke Tests อย่างไ
 เหตุใดจึงต้องใช้ GitHub Secrets แทนการเขียนค่า credentials โดยตรงใน workflow YAML file? ถ้าใส่ค่า JWT_SECRET ตรงๆ ใน YAML จะเกิดอะไรขึ้น?
 
 ```plaintext
-# ตอบที่นี่
+# ควรเก็บ credentials ใน GitHub Secrets เพื่อไม่ให้ค่าเหล่านั้นถูก commit ใน YAML และปรากฏในประวัติ Git หากเขียน JWT_SECRET ไว้ตรง ๆ ผู้ที่เข้าถึง repository อาจเห็นและนำไปใช้ปลอม JWT ได้ หาก secret รั่ว ควรเปลี่ยนค่าใหม่และตรวจสอบการใช้งานที่เกี่ยวข้อง
 
 ```
 
@@ -2553,7 +2610,7 @@ Newman CI tests ต่างจาก Post-Deploy Smoke Tests อย่างไ
 อธิบาย Git Flow ที่ใช้ในโปรเจกต์นี้ (develop → staging → main) ทำไมต้องมีหลาย environment แทนที่จะ deploy ตรงจาก develop ไป production เลย?
 
 ```plaintext
-# ตอบที่นี่
+# develop ใช้รวมการเปลี่ยนแปลงและ deploy ไป QA เพื่อทดสอบเบื้องต้น เมื่อผ่านแล้วจึงเปิด Pull Request ไป staging ซึ่งเป็นพื้นที่ตรวจสอบการทำงานร่วมกันและทดสอบก่อนปล่อยจริง จากนั้นเปิด Pull Request จาก staging ไป main เพื่อ deploy Production
 
 ```
 
