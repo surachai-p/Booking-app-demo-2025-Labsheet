@@ -1,0 +1,71 @@
+{
+  "info": {
+    "name": "Booking App - Production Smoke Tests",
+    "description": "Read-only checks for the deployed API. These requests do not create, update, or delete production data.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3001"
+    }
+  ],
+  "item": [
+    {
+      "name": "API is reachable and returns rooms",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('API returns HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('Response body is an array', () => pm.expect(pm.response.json()).to.be.an('array'));",
+              "pm.test('Response completes within 15 seconds', () => pm.expect(pm.response.responseTime).to.be.below(15000));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/rooms"
+      }
+    },
+    {
+      "name": "Protected bookings reject anonymous access",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Anonymous request returns HTTP 401', () => pm.response.to.have.status(401));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/bookings"
+      }
+    },
+    {
+      "name": "API sends required security headers",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('API returns HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('X-Frame-Options is present', () => pm.expect(pm.response.headers.has('X-Frame-Options')).to.be.true);",
+              "pm.test('X-Content-Type-Options is present', () => pm.expect(pm.response.headers.has('X-Content-Type-Options')).to.be.true);",
+              "pm.test('Content-Security-Policy is present', () => pm.expect(pm.response.headers.has('Content-Security-Policy')).to.be.true);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/rooms"
+      }
+    }
+  ]
+}

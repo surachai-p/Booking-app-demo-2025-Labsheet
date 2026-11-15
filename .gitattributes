@@ -1,0 +1,10 @@
+*.sh  text eol=lf
+Dockerfile text eol=lf
+docker-compose.yml text eol=lf
+.env* text eol=lf
+*.md text eol=lf
+*.json text eol=lf
+*.js text eol=lf
+*.prisma text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
