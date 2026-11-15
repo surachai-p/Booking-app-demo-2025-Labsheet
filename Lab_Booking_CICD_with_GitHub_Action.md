@@ -441,7 +441,8 @@ model Booking {
 
 ```plaintext
 # ตอบคำถามที่นี่
-
+คำตอบ: เป็นแบบ one-to-many (หนึ่งต่อกลุ่ม)
+เหตุผล: ในโมเดล Room มีการประกาศฟิลด์ bookings Booking[] (แสดงว่า 1 ห้องสามารถมีรายการจองได้หลายรายการ) และในโมเดล Booking มีฟิลด์ roomId ที่อ้างอิงไปที่ Room ผ่าน @relation (หลายการจองสามารถอ้างอิงกลับมายัง 1 ห้องได้)
 ```
 
 ---
@@ -583,6 +584,8 @@ export DATABASE_URL="postgresql://postgres:postgres@localhost:5432/booking_app"
 # เปิด Prisma Studio
 npx prisma studio
 # จะเปิด browser ที่ http://localhost:5555
+
+![68030434](image-1.png)
 ```
 
 > 🪟 **Windows**: ถ้าเจอ `No database URL found` ให้ตรวจสอบ `.env` ด้วย `cat -A .env` ว่ามี `^M$` หรือไม่ ถ้ามีให้รัน `sed -i 's/\r$//' .env` แล้ว export DATABASE_URL แบบ inline แทน
@@ -598,6 +601,9 @@ npm run dev
 ```
 
 เปิด browser ที่ `http://localhost:5173` ควรเห็นหน้า Booking System
+![68030434](image-2.png)
+![68030434](image-3.png)
+![68030434](image-4.png)
 
 ### ขั้นตอนที่ 3.6: ทดสอบ API Endpoints ด้วย curl
 
@@ -639,7 +645,7 @@ curl http://localhost:3001/api/reports \
   -H "Authorization: Bearer $TOKEN"
 ```
 
-**บันทึกผลการทดสอบ**:
+**บันทึกผลการทดสอบ**:![68030434](image.png)
 
 ```plaintext
 # วาง output จาก curl ที่นี่
@@ -963,6 +969,8 @@ start newman-report.html       # Windows (Git Bash)
 
 ```plaintext
 # แนบ screenshot ผลการทดสอบที่นี่
+![68030434](image-5.png)
+![68030434](image-6.png)
 
 ```
 
@@ -970,6 +978,19 @@ start newman-report.html       # Windows (Git Bash)
 
 ```plaintext
 # ตอบคำถามที่นี่
+Positive Cases (กรณีทดสอบที่คาดหวังให้สำเร็จ):
+
+GET /api/rooms (ดึงข้อมูลห้องพัก): ทดสอบเรียกดูรายการห้องพักทั้งหมด ระบบต้องตอบกลับด้วย HTTP Status 200 OK และส่งข้อมูลรายการห้องพักกลับมาในรูปแบบ Array
+
+POST /api/login (เข้าสู่ระบบด้วยบัญชี Admin): ทดสอบส่ง username และ password ที่ถูกต้อง ระบบต้องตอบกลับด้วย Status 200 OK พร้อมส่งค่า token (JWT) กลับมาเพื่อให้ใช้ยืนยันตัวตนใน Request ถัดไปได้
+
+POST /api/bookings (สร้างรายการจองห้องพัก): ทดสอบส่งข้อมูลการจองที่ครบถ้วนและถูกต้อง ระบบต้องบันทึกข้อมูลและตอบกลับด้วย Status 201 Created
+
+Negative Cases (กรณีทดสอบที่คาดหวังให้ล้มเหลว/ถูกปฏิเสธ):
+
+GET /api/reports/export หรือ /api/bookings โดยไม่ส่ง Token: ทดสอบเข้าถึง Endpoint ของ Admin โดยไม่แนบ Authorization Header ระบบต้องปฏิเสธการเข้าถึงและตอบกลับด้วย Status 401 Unauthorized
+
+POST /api/login ด้วยรหัสผ่านผิด: ทดสอบส่งข้อมูลเข้าสู่ระบบด้วยรหัสผ่านที่ไม่ถูกต้อง ระบบต้องไม่ให้ Token และตอบกลับด้วย Status 401 Unauthorized
 
 ```
 
@@ -996,6 +1017,7 @@ Workflow ที่มีอยู่ใช้ self-hosted runner และทำ
 
 ```plaintext
 # ตอบคำถามที่นี่
+ในไฟล์ ci.yml ปัจจุบันกำหนดให้ใช้ runs-on: ubuntu-latest (ซึ่งเป็น GitHub-hosted runner ที่รันบน Cloud ของ GitHub)   ข้อดีของการใช้ ubuntu-latest (Cloud Runner):สะดวก ไม่ต้องดูแลรักษาเซิร์ฟเวอร์หรือติดตั้งเครื่องมือด้วยตัวเอง เพราะมี Docker, Node.js และเครื่องมือพื้นฐานติดตั้งมาให้พร้อมใช้งานแต่ละ Job ทำงานในสภาพแวดล้อมที่สะอาดใหม่เอี่ยมเสมอ (Clean environment) ป้องกันปัญหาไฟล์ตกค้างจาก Job ก่อนหน้าข้อเสีย / ข้อจำกัด:มีข้อจำกัดเรื่องเวลาการใช้งานฟรี (Free tier minutes) หากใช้งานเกินโควตาต้องเสียค่าใช้จ่ายไม่สามารถเข้าถึงระบบภายในองค์กร (Internal Network / On-premise Database) ได้โดยตรงเหมือนกับการใช้ Self-hosted runner
 
 ```
 
