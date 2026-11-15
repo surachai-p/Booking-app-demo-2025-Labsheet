@@ -1,0 +1,283 @@
+name: CI/CD Pipeline - Booking App
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main, develop]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-cd-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: '20'
+
+jobs:
+  backend-test:
+    name: Backend Tests (Newman API)
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: booking_test
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+      - name: Install backend dependencies
+        working-directory: backend
+        run: npm ci
+      - name: Generate Prisma client
+        working-directory: backend
+        run: npx prisma generate --schema=prisma/schema.prisma
+      - name: Run database migrations
+        working-directory: backend
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/booking_test
+        run: npx prisma migrate deploy --schema=prisma/schema.prisma
+      - name: Seed test data
+        working-directory: backend
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/booking_test
+        run: |
+          node -e "
+            const { PrismaClient } = require('@prisma/client');
+            const bcrypt = require('bcryptjs');
+            const prisma = new PrismaClient();
+            async function seed() {
+              const hash = await bcrypt.hash('admin123', 10);
+              await prisma.user.upsert({
+                where: { username: 'admin' },
+                update: { password: hash, role: 'admin' },
+                create: { username: 'admin', password: hash, role: 'admin' }
+              });
+              await prisma.room.upsert({
+                where: { roomType: 'standard' },
+                update: {},
+                create: {
+                  name: 'Test Room 101',
+                  description: 'Room used by CI tests',
+                  roomType: 'standard',
+                  capacity: 2,
+                  price: 1000
+                }
+              });
+            }
+            seed().catch((error) => { console.error(error); process.exit(1); })
+              .finally(() => prisma.\$disconnect());
+          "
+      - name: Start backend server
+        working-directory: backend
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/booking_test
+          JWT_SECRET: ci-test-secret-key-that-is-not-used-in-production
+          ALLOWED_ORIGINS: http://localhost:5173
+          PORT: 3001
+          NODE_ENV: test
+        run: |
+          npm start > /tmp/booking-backend.log 2>&1 &
+          for attempt in {1..30}; do
+            if curl --fail --silent http://localhost:3001/api/rooms > /dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat /tmp/booking-backend.log
+          exit 1
+      - name: Install Newman
+        run: npm install --global newman@6 newman-reporter-htmlextra@1
+      - name: Run Newman API tests
+        run: |
+          newman run tests/booking-api.postman_collection.json \
+            --env-var "baseUrl=http://localhost:3001" \
+            --reporters cli,junit,htmlextra \
+            --reporter-junit-export newman-results.xml \
+            --reporter-htmlextra-export newman-report.html
+      - name: Upload Newman test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: newman-test-results
+          path: |
+            newman-results.xml
+            newman-report.html
+          if-no-files-found: warn
+
+  frontend-build:
+    name: Frontend Build and Lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci
+      - name: Lint frontend
+        working-directory: frontend
+        run: npm run lint
+      - name: Build frontend
+        working-directory: frontend
+        env:
+          VITE_API_URL: http://localhost:3001
+        run: npm run build
+      - name: Upload frontend build
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-build
+          path: frontend/dist/
+          if-no-files-found: error
+
+  security-scan:
+    name: Security Scanning
+    runs-on: ubuntu-latest
+    needs: [backend-test, frontend-build]
+    steps:
+      - name: Checkout full history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - name: Audit backend dependencies
+        working-directory: backend
+        run: |
+          npm ci
+          npm audit --audit-level=high
+      - name: Audit frontend dependencies
+        working-directory: frontend
+        run: |
+          npm ci
+          npm audit --audit-level=high
+      - name: Scan repository for verified secrets
+        uses: trufflesecurity/trufflehog@main
+        with:
+          path: ./
+          extra_args: --only-verified
+      - name: OWASP Dependency Check
+        uses: dependency-check/Dependency-Check_Action@main
+        with:
+          project: booking-backend
+          path: backend
+          format: HTML
+          args: >-
+            --enableRetired
+            --failOnCVSS 7
+      - name: Upload OWASP report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: owasp-dependency-report
+          path: reports/
+          if-no-files-found: warn
+
+  deploy-frontend:
+    name: Deploy Frontend to Vercel
+    runs-on: ubuntu-latest
+    needs: security-scan
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    environment: production
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Install Vercel CLI
+        run: npm install --global vercel
+      - name: Deploy production frontend
+        working-directory: frontend
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: vercel --prod --token "$VERCEL_TOKEN" --yes
+
+  deploy-backend-render:
+    name: Deploy Backend to Render
+    runs-on: ubuntu-latest
+    needs: security-scan
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    environment: production
+    steps:
+      - name: Trigger Render deployment
+        env:
+          RENDER_DEPLOY_HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+        run: curl --fail --show-error --request POST "$RENDER_DEPLOY_HOOK_URL"
+      - name: Wait for Render health check
+        env:
+          RENDER_BACKEND_URL: ${{ secrets.RENDER_BACKEND_URL }}
+        run: |
+          for attempt in {1..30}; do
+            echo "Health check attempt $attempt/30"
+            if curl --fail --silent --connect-timeout 5 --max-time 10 \
+              "$RENDER_BACKEND_URL/api/rooms" > /dev/null; then
+              exit 0
+            fi
+            sleep 10
+          done
+          exit 1
+
+  post-deploy-smoke-test:
+    name: Post-Deploy Smoke Tests
+    runs-on: ubuntu-latest
+    needs: [deploy-frontend, deploy-backend-render]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Install Newman
+        run: npm install --global newman@6 newman-reporter-htmlextra@1
+      - name: Run read-only production API smoke tests
+        env:
+          RENDER_BACKEND_URL: ${{ secrets.RENDER_BACKEND_URL }}
+        run: |
+          newman run tests/smoke-tests.postman_collection.json \
+            --env-var "baseUrl=$RENDER_BACKEND_URL" \
+            --reporters cli,htmlextra \
+            --reporter-htmlextra-export smoke-test-report.html \
+            --bail
+      - name: Check production frontend
+        env:
+          VERCEL_FRONTEND_URL: ${{ secrets.VERCEL_FRONTEND_URL }}
+        run: curl --fail --show-error --location "$VERCEL_FRONTEND_URL" > /dev/null
+      - name: Require production security headers
+        env:
+          RENDER_BACKEND_URL: ${{ secrets.RENDER_BACKEND_URL }}
+        run: |
+          headers="$(curl --fail --silent --show-error --head "$RENDER_BACKEND_URL/api/rooms")"
+          for header in x-frame-options x-content-type-options content-security-policy; do
+            if ! grep --ignore-case --quiet "^${header}:" <<< "$headers"; then
+              echo "Missing required security header: $header"
+              exit 1
+            fi
+          done
+      - name: Upload smoke test report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: smoke-test-report-${{ github.sha }}
+          path: smoke-test-report.html
+          if-no-files-found: warn

@@ -1,0 +1,262 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<robot generator="Robot 7.4.2 (Python 3.13.2 on darwin)" generated="2026-03-12T11:27:24.563966" rpa="false" schemaversion="5">
+<suite id="s1" name="Hotel Booking Test" source="/Users/bbb/GitRepo/booking-app-demo-2025/tests/robot/hotel_booking_test.robot">
+<kw name="Open Browser" owner="SeleniumLibrary" type="SETUP">
+<msg time="2026-03-12T11:27:24.708817" level="INFO">Opening browser 'chrome' to base url 'http://localhost:5173'.</msg>
+<arg>${FRONTEND_URL}</arg>
+<arg>${BROWSER}</arg>
+<doc>Opens a new browser instance to the optional ``url``.</doc>
+<status status="PASS" start="2026-03-12T11:27:24.708662" elapsed="1.129245"/>
+</kw>
+<test id="s1-t1" name="TC_UI_001 หน้า Login โหลดได้สำเร็จและแสดง Element ครบถ้วน" line="32">
+<kw name="Go To" owner="SeleniumLibrary" type="SETUP">
+<msg time="2026-03-12T11:27:25.840825" level="INFO">Opening url 'http://localhost:5173/login'</msg>
+<arg>${LOGIN_URL}</arg>
+<doc>Navigates the current browser window to the provided ``url``.</doc>
+<status status="PASS" start="2026-03-12T11:27:25.840628" elapsed="0.101422"/>
+</kw>
+<kw name="Page Should Contain" owner="SeleniumLibrary">
+<msg time="2026-03-12T11:27:25.955724" level="INFO">Current page contains text 'เข้าสู่ระบบ'.</msg>
+<arg>เข้าสู่ระบบ</arg>
+<doc>Verifies that current page contains ``text``.</doc>
+<status status="PASS" start="2026-03-12T11:27:25.942236" elapsed="0.013562"/>
+</kw>
+<kw name="Element Should Be Visible" owner="SeleniumLibrary">
+<msg time="2026-03-12T11:27:25.968615" level="INFO">Element 'xpath=//input[@type='text']' is displayed.</msg>
+<arg>xpath=//input[@type='text']</arg>
+<doc>Verifies that the element identified by ``locator`` is visible.</doc>
+<status status="PASS" start="2026-03-12T11:27:25.956019" elapsed="0.012665"/>
+</kw>
+<kw name="Element Should Be Visible" owner="SeleniumLibrary">
+<msg time="2026-03-12T11:27:25.976883" level="INFO">Element 'xpath=//input[@type='password']' is displayed.</msg>
+<arg>xpath=//input[@type='password']</arg>
+<doc>Verifies that the element identified by ``locator`` is visible.</doc>
+<status status="PASS" start="2026-03-12T11:27:25.968824" elapsed="0.008131"/>
+</kw>
+<kw name="Element Should Be Visible" owner="SeleniumLibrary">
+<msg time="2026-03-12T11:27:25.986856" level="INFO">Element 'xpath=//button[@type='submit']' is displayed.</msg>
+<arg>xpath=//button[@type='submit']</arg>
+<doc>Verifies that the element identified by ``locator`` is visible.</doc>
+<status status="PASS" start="2026-03-12T11:27:25.977132" elapsed="0.009786"/>
+</kw>
+<doc>ตรวจสอบว่าหน้า Login มี Element พื้นฐานครบ
+ได้แก่ หัวข้อ, Input username, Input password, ปุ่ม Submit</doc>
+<status status="PASS" start="2026-03-12T11:27:25.838662" elapsed="0.148392"/>
+</test>
+<test id="s1-t2" name="TC_UI_002 Login สำเร็จและ Redirect ไปหน้า Admin Dashboard" line="47">
+<kw name="Go To" owner="SeleniumLibrary" type="SETUP">
+<msg time="2026-03-12T11:27:25.988379" level="INFO">Opening url 'http://localhost:5173/login'</msg>
+<arg>${LOGIN_URL}</arg>
+<doc>Navigates the current browser window to the provided ``url``.</doc>
+<status status="PASS" start="2026-03-12T11:27:25.988294" elapsed="0.019724"/>
+</kw>
+<kw name="Input Text" owner="SeleniumLibrary">
+<msg time="2026-03-12T11:27:26.008334" level="INFO">Typing text 'admin' into text field 'xpath=//input[@type='text']'.</msg>
+<arg>xpath=//input[@type='text']</arg>
+<arg>${VALID_USER}</arg>
+<doc>Types the given ``text`` into the text field identified by ``locator``.</doc>
+<status status="PASS" start="2026-03-12T11:27:26.008169" elapsed="0.090984"/>
+</kw>
+<kw name="Input Text" owner="SeleniumLibrary">
+<msg time="2026-03-12T11:27:26.099486" level="INFO">Typing text 'admin123' into text field 'xpath=//input[@type='password']'.</msg>
+<arg>xpath=//input[@type='password']</arg>
+<arg>${VALID_PASS}</arg>
+<doc>Types the given ``text`` into the text field identified by ``locator``.</doc>
+<status status="PASS" start="2026-03-12T11:27:26.099320" elapsed="0.038071"/>
+</kw>
+<kw name="Click Button" owner="SeleniumLibrary">
+<msg time="2026-03-12T11:27:26.137654" level="INFO">Clicking button 'xpath=//button[@type='submit']'.</msg>
+<arg>xpath=//button[@type='submit']</arg>
+<doc>Clicks the button identified by ``locator``.</doc>
+<status status="PASS" start="2026-03-12T11:27:26.137532" elapsed="0.044117"/>
+</kw>
+<kw name="Wait Until Location Is" owner="SeleniumLibrary">
+<arg>${ADMIN_URL}</arg>
+<arg>timeout=5s</arg>
+<doc>Waits until the current URL is ``expected``.</doc>
+<status status="PASS" start="2026-03-12T11:27:26.182142" elapsed="0.213437"/>
+</kw>
+<kw name="Page Should Contain" owner="SeleniumLibrary">
+<msg time="2026-03-12T11:27:26.404206" level="INFO">Current page contains text 'ระบบจัดการห้องพัก'.</msg>
+<arg>ระบบจัดการห้องพัก</arg>
+<doc>Verifies that current page contains ``text``.</doc>
+<status status="PASS" start="2026-03-12T11:27:26.395752" elapsed="0.008515"/>
+</kw>
+<kw name="Go To" owner="SeleniumLibrary" type="TEARDOWN">
+<msg time="2026-03-12T11:27:26.404542" level="INFO">Opening url 'http://localhost:5173/login'</msg>
+<arg>${LOGIN_URL}</arg>
+<doc>Navigates the current browser window to the provided ``url``.</doc>
+<status status="PASS" start="2026-03-12T11:27:26.404452" elapsed="0.019085"/>
+</kw>
+<doc>ทดสอบ Login ด้วย Admin Credentials ที่ถูกต้อง
+ผลที่คาดหวัง: URL เปลี่ยนไป /admin และแสดงหน้า Dashboard</doc>
+<status status="PASS" start="2026-03-12T11:27:25.987260" elapsed="0.436409"/>
+</test>
+<test id="s1-t3" name="TC_UI_003 Login ล้มเหลวด้วย Password ผิดและแสดง Error Message" line="69">
+<kw name="Go To" owner="SeleniumLibrary" type="SETUP">
+<msg time="2026-03-12T11:27:26.425740" level="INFO">Opening url 'http://localhost:5173/login'</msg>
+<arg>${LOGIN_URL}</arg>
+<doc>Navigates the current browser window to the provided ``url``.</doc>
+<status status="PASS" start="2026-03-12T11:27:26.425619" elapsed="0.022696"/>
+</kw>
+<kw name="Input Text" owner="SeleniumLibrary">
+<msg time="2026-03-12T11:27:26.448632" level="INFO">Typing text 'admin' into text field 'xpath=//input[@type='text']'.</msg>
+<arg>xpath=//input[@type='text']</arg>
+<arg>${VALID_USER}</arg>
+<doc>Types the given ``text`` into the text field identified by ``locator``.</doc>
+<status status="PASS" start="2026-03-12T11:27:26.448483" elapsed="0.035007"/>
+</kw>
+<kw name="Input Text" owner="SeleniumLibrary">
+<msg time="2026-03-12T11:27:26.483801" level="INFO">Typing text 'wrongpassword' into text field 'xpath=//input[@type='password']'.</msg>
+<arg>xpath=//input[@type='password']</arg>
+<arg>${INVALID_PASS}</arg>
+<doc>Types the given ``text`` into the text field identified by ``locator``.</doc>
+<status status="PASS" start="2026-03-12T11:27:26.483637" elapsed="0.038771"/>
+</kw>
+<kw name="Click Button" owner="SeleniumLibrary">
+<msg time="2026-03-12T11:27:26.522677" level="INFO">Clicking button 'xpath=//button[@type='submit']'.</msg>
+<arg>xpath=//button[@type='submit']</arg>
+<doc>Clicks the button identified by ``locator``.</doc>
+<status status="PASS" start="2026-03-12T11:27:26.522556" elapsed="0.033290"/>
+</kw>
+<kw name="Wait Until Element Is Visible" owner="SeleniumLibrary">
+<arg>xpath=//div[contains(@class,'bg-red')]</arg>
+<arg>timeout=3s</arg>
+<doc>Waits until the element ``locator`` is visible.</doc>
+<status status="PASS" start="2026-03-12T11:27:26.555997" elapsed="0.219955"/>
+</kw>
+<kw name="Element Should Be Visible" owner="SeleniumLibrary">
+<msg time="2026-03-12T11:27:26.784021" level="INFO">Element 'xpath=//div[contains(@class,'bg-red')]' is displayed.</msg>
+<arg>xpath=//div[contains(@class,'bg-red')]</arg>
+<doc>Verifies that the element identified by ``locator`` is visible.</doc>
+<status status="PASS" start="2026-03-12T11:27:26.776154" elapsed="0.007924"/>
+</kw>
+<kw name="Location Should Be" owner="SeleniumLibrary">
+<msg time="2026-03-12T11:27:26.786529" level="INFO">Current location is 'http://localhost:5173/login'.</msg>
+<arg>${LOGIN_URL}</arg>
+<doc>Verifies that the current URL is exactly ``url``.</doc>
+<status status="PASS" start="2026-03-12T11:27:26.784203" elapsed="0.002370"/>
+</kw>
+<doc>ทดสอบว่าระบบแสดง Error เมื่อ Password ไม่ถูกต้อง
+ผลที่คาดหวัง: อยู่หน้า Login, เห็น Error แดง</doc>
+<status status="PASS" start="2026-03-12T11:27:26.424034" elapsed="0.362671"/>
+</test>
+<test id="s1-t4" name="TC_UI_004 เข้าหน้า Admin โดยไม่ Login ต้อง Redirect กลับหน้า Login" line="90">
+<kw name="Go To" owner="SeleniumLibrary" type="SETUP">
+<msg time="2026-03-12T11:27:26.788606" level="INFO">Opening url 'http://localhost:5173/login'</msg>
+<arg>${LOGIN_URL}</arg>
+<doc>Navigates the current browser window to the provided ``url``.</doc>
+<status status="PASS" start="2026-03-12T11:27:26.788528" elapsed="0.020646"/>
+</kw>
+<kw name="Delete All Cookies" owner="SeleniumLibrary">
+<doc>Deletes all cookies.</doc>
+<status status="PASS" start="2026-03-12T11:27:26.809325" elapsed="0.004449"/>
+</kw>
+<kw name="Go To" owner="SeleniumLibrary">
+<msg time="2026-03-12T11:27:26.814020" level="INFO">Opening url 'http://localhost:5173/admin'</msg>
+<arg>${ADMIN_URL}</arg>
+<doc>Navigates the current browser window to the provided ``url``.</doc>
+<status status="PASS" start="2026-03-12T11:27:26.813917" elapsed="0.016852"/>
+</kw>
+<kw name="Wait Until Location Contains" owner="SeleniumLibrary">
+<msg time="2026-03-12T11:27:31.978838" level="INFO" html="true">&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td colspan="3"&gt;&lt;a href="selenium-screenshot-4.png"&gt;&lt;img src="selenium-screenshot-4.png" width="800px"&gt;&lt;/a&gt;</msg>
+<msg time="2026-03-12T11:27:31.978996" level="FAIL">Location did not contain '/login' in 5 seconds.</msg>
+<arg>/login</arg>
+<arg>timeout=5s</arg>
+<doc>Waits until the current URL contains ``expected``.</doc>
+<status status="FAIL" start="2026-03-12T11:27:26.831001" elapsed="5.150714">Location did not contain '/login' in 5 seconds.</status>
+</kw>
+<kw name="Page Should Contain" owner="SeleniumLibrary">
+<arg>เข้าสู่ระบบ</arg>
+<doc>Verifies that current page contains ``text``.</doc>
+<status status="NOT RUN" start="2026-03-12T11:27:31.981870" elapsed="0.000022"/>
+</kw>
+<doc>ทดสอบว่า ProtectedRoute ทำงานถูกต้อง
+ผลที่คาดหวัง: ถูก Redirect กลับ /login อัตโนมัติ</doc>
+<status status="FAIL" start="2026-03-12T11:27:26.786882" elapsed="5.195128">Location did not contain '/login' in 5 seconds.</status>
+</test>
+<test id="s1-t5" name="TC_UI_005 Logout สำเร็จและ Redirect กลับหน้า Login" line="107">
+<kw name="Go To" owner="SeleniumLibrary" type="SETUP">
+<msg time="2026-03-12T11:27:31.982854" level="INFO">Opening url 'http://localhost:5173/login'</msg>
+<arg>${LOGIN_URL}</arg>
+<doc>Navigates the current browser window to the provided ``url``.</doc>
+<status status="PASS" start="2026-03-12T11:27:31.982776" elapsed="0.023926"/>
+</kw>
+<kw name="Perform Admin Login">
+<kw name="Go To" owner="SeleniumLibrary">
+<msg time="2026-03-12T11:27:32.007295" level="INFO">Opening url 'http://localhost:5173/login'</msg>
+<arg>${LOGIN_URL}</arg>
+<doc>Navigates the current browser window to the provided ``url``.</doc>
+<status status="PASS" start="2026-03-12T11:27:32.007229" elapsed="0.017674"/>
+</kw>
+<kw name="Input Text" owner="SeleniumLibrary">
+<msg time="2026-03-12T11:27:32.025157" level="INFO">Typing text 'admin' into text field 'xpath=//input[@type='text']'.</msg>
+<arg>xpath=//input[@type='text']</arg>
+<arg>${username}</arg>
+<doc>Types the given ``text`` into the text field identified by ``locator``.</doc>
+<status status="PASS" start="2026-03-12T11:27:32.025012" elapsed="0.038441"/>
+</kw>
+<kw name="Input Text" owner="SeleniumLibrary">
+<msg time="2026-03-12T11:27:32.063783" level="INFO">Typing text 'admin123' into text field 'xpath=//input[@type='password']'.</msg>
+<arg>xpath=//input[@type='password']</arg>
+<arg>${password}</arg>
+<doc>Types the given ``text`` into the text field identified by ``locator``.</doc>
+<status status="PASS" start="2026-03-12T11:27:32.063584" elapsed="0.040331"/>
+</kw>
+<kw name="Click Button" owner="SeleniumLibrary">
+<msg time="2026-03-12T11:27:32.104143" level="INFO">Clicking button 'xpath=//button[@type='submit']'.</msg>
+<arg>xpath=//button[@type='submit']</arg>
+<doc>Clicks the button identified by ``locator``.</doc>
+<status status="PASS" start="2026-03-12T11:27:32.104020" elapsed="0.032242"/>
+</kw>
+<arg>${VALID_USER}</arg>
+<arg>${VALID_PASS}</arg>
+<doc>Keyword สำหรับทำ Login ด้วย credentials ที่ระบุ</doc>
+<status status="PASS" start="2026-03-12T11:27:32.007008" elapsed="0.129329"/>
+</kw>
+<kw name="Wait Until Location Is" owner="SeleniumLibrary">
+<arg>${ADMIN_URL}</arg>
+<arg>timeout=5s</arg>
+<doc>Waits until the current URL is ``expected``.</doc>
+<status status="PASS" start="2026-03-12T11:27:32.136452" elapsed="0.210064"/>
+</kw>
+<kw name="Click Element" owner="SeleniumLibrary">
+<msg time="2026-03-12T11:27:32.346896" level="INFO">Clicking element 'xpath=//button[contains(text(),'ออกจากระบบ')]'.</msg>
+<arg>xpath=//button[contains(text(),'ออกจากระบบ')]</arg>
+<doc>Click the element identified by ``locator``.</doc>
+<status status="PASS" start="2026-03-12T11:27:32.346730" elapsed="0.046150"/>
+</kw>
+<kw name="Wait Until Location Contains" owner="SeleniumLibrary">
+<arg>/login</arg>
+<arg>timeout=5s</arg>
+<doc>Waits until the current URL contains ``expected``.</doc>
+<status status="PASS" start="2026-03-12T11:27:32.393105" elapsed="0.003165"/>
+</kw>
+<kw name="Page Should Contain" owner="SeleniumLibrary">
+<msg time="2026-03-12T11:27:32.407049" level="INFO">Current page contains text 'เข้าสู่ระบบ'.</msg>
+<arg>เข้าสู่ระบบ</arg>
+<doc>Verifies that current page contains ``text``.</doc>
+<status status="PASS" start="2026-03-12T11:27:32.396465" elapsed="0.010655"/>
+</kw>
+<doc>ทดสอบการ Logout จาก Admin Dashboard</doc>
+<status status="PASS" start="2026-03-12T11:27:31.982138" elapsed="0.425118"/>
+</test>
+<kw name="Close Browser" owner="SeleniumLibrary" type="TEARDOWN">
+<doc>Closes the current browser.</doc>
+<status status="PASS" start="2026-03-12T11:27:32.407573" elapsed="0.080854"/>
+</kw>
+<status status="FAIL" start="2026-03-12T11:27:24.565906" elapsed="7.922589"/>
+</suite>
+<statistics>
+<total>
+<stat pass="4" fail="1" skip="0">All Tests</stat>
+</total>
+<tag>
+</tag>
+<suite>
+<stat name="Hotel Booking Test" id="s1" pass="4" fail="1" skip="0">Hotel Booking Test</stat>
+</suite>
+</statistics>
+<errors>
+</errors>
+</robot>
